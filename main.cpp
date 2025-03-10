@@ -27,6 +27,10 @@ constexpr auto create_http_response_from_html(const std::string& body) {
            "\r\n" + html;
 }
 
+struct Endpoint {
+  std::string path;
+  std::string repsonshe;
+};
 
 // Extract the requested path from the HTTP request
 constexpr std::string get_request_path(const std::string& request) {
@@ -47,7 +51,6 @@ constexpr std::string get_session_id(const std::string& request) {
 
     size_t end = request.find(";", start);
     if (end == std::string::npos) return "";
-
     return request.substr(start, end - start);
 }
 
@@ -56,11 +59,6 @@ static_assert(get_request_path("GET /about HTTP/1.1") == "/about");
 static_assert(get_request_path("GET /contact HTTP/1.1") == "/contact");
 static_assert(get_request_path("GET /index/lemon HTTP/1.1") == "/index/lemon");
 
-
-struct Endpoint {
-  std::string path;
-  std::string repsonse;
-};
 
 
 int main() {

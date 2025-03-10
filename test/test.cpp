@@ -42,7 +42,7 @@ TEST_CASE("Hello, World!") {}
 
 TEST_CASE("a with href") {
   auto got = html::a{"Click me"}.with_href("https://example.com").render();
-  std::cout << got << std::endl;
+  std::cout << std::string{got} << std::endl;
   auto expexted = "<a href='https://example.com'>Click me</a>";
   REQUIRE(got == expexted);
 }

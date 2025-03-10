@@ -3,8 +3,6 @@
 #include "layout.hpp"
 
 static_assert(html::p <"text-blue-500">{"p"}.render() == "<p class='text-blue-500'>p</p>");
-
-
 static_assert(html::p{"foo"}.render() == "<p>foo</p>");
 
 constexpr auto home() {
