@@ -1,22 +1,18 @@
-#include <cstddef>
 #include <iostream>
-#include <cstring>
-#include <string>
-#include <string_view>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include "other.hpp"
+#include "tags.hpp"
 
 constexpr static auto PORT = 3000;
 
-constexpr auto create_http_response_from_html(std::string_view body) {
+constexpr auto create_http_response_from_html(const std::string& body) {
     std::string html = "<!DOCTYPE html>"
                        "<html lang='en'>"
                        "<head>"
                        "<meta charset='UTF-8'>"
                        "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"
-                       "<script src='https://cdn.tailwindcss.com'></script>"
+                       "<script src='https://unpkg.com/@tailwindcss/browser@4'></script>"
                        "<title>My C++ Server</title>"
                        "</head>"
                        "<body class='text-gray-900 p-4'>" + std::string{body} +
@@ -28,6 +24,20 @@ constexpr auto create_http_response_from_html(std::string_view body) {
            "Connection: close\r\n"
            "\r\n" + html;
 }
+
+auto home () {
+    using namespace html;
+    return html::div <"flex flex-col bg-black text-white items-center justify-center h-screen"> {{
+        h1{"pond.audio"},
+        p{"This is a simple HTTP server written in C++ using only the standard library."},
+        a<"bg-blue-500 text-white">{"This is a simple HTTP server written in C++ using only the standard library."}
+          .with_href("https://example.com"),
+        p{"cool cool"},
+        p{"i am updating"},
+        p{"This is a simple HTTP server written in C++ using only the standard library."}
+    }};
+};
+
 
 // Extract the requested path from the HTTP request
 constexpr std::string get_request_path(const std::string& request) {
@@ -98,12 +108,7 @@ int main() {
         std::string response;
 
         if (path == "/") {
-            auto doc = tag_base<"div", "bg-blue-500 text-white p-4">{
-              tag_base<"h1", "text-red-500">{
-                "Welcome to the C++ Server"
-              }
-            };
-            response = create_http_response_from_html(doc.render());
+            response = create_http_response_from_html(home());
         }
 
         send(new_socket, response.c_str(), response.size(), 0);
