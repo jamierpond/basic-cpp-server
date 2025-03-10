@@ -1,91 +1,16 @@
 #pragma once
 
 #include <algorithm>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <vector>
 
+// TODO BRING BACK when possible
+// #include "static_string.hpp"
+
 namespace pond {
 
-template <size_t N, typename T>
-struct static_string {
-  std::array<T, N> data;
-  size_t size = 0;
-
-  constexpr static_string() = default;
-  constexpr explicit static_string(const T (&str)[N]) {
-    std::copy_n(str, N, data.begin());
-    size = N;
-  }
-
-  constexpr static_string(const T *str, size_t len) {
-    std::copy_n(str, len, data.begin());
-    size = len;
-  }
-
-  constexpr static_string(const T *str) {
-    size = 0;
-    // eek - that's a scary while loop
-    while (*str) {
-      data[size++] = *str++;
-    }
-  }
-
-  constexpr static_string(const static_string &other) {
-    std::copy_n(other.data.begin(), other.size, data.begin());
-    size = other.size;
-  }
-
-  constexpr static_string &operator=(const static_string &other) {
-    std::copy_n(other.data.begin(), other.size, data.begin());
-    size = other.size;
-    return *this;
-  }
-
-  constexpr static_string &operator+=(const T &c) {
-    data[size++] = c;
-    return *this;
-  }
-
-  constexpr static_string &operator+=(const T (&str)[N]) {
-    std::copy_n(str, N, data.begin() + size);
-    size += N;
-    return *this;
-  }
-
-  constexpr static_string &operator+=(const static_string &other) {
-    std::copy_n(other.data.begin(), other.size, data.begin() + size);
-    size += other.size;
-    return *this;
-  }
-
-  constexpr size_t length() const { return size; }
-  constexpr size_t max_size() const { return N; }
-  constexpr bool empty() const { return size == 0; }
-  constexpr const T *c_str() const { return data.data(); }
-
-  constexpr T &operator[](size_t i) { return data[i]; }
-
-  constexpr const T &operator[](size_t i) const { return data[i]; }
-
-  constexpr bool operator==(const static_string &other) const {
-    return size == other.size &&
-           std::equal(data.begin(), data.begin() + size, other.data.begin());
-  }
-
-  template <size_t M>
-  constexpr bool operator==(const char (&str)[N]) {
-    return size == M && std::equal(data.begin(), data.begin() + size, str);
-  }
-
-  // castable to std::string
-  operator std::string() const { return std::string(data.begin(), data.begin() + size); }
-
-  constexpr bool operator!=(const static_string &other) const {
-    return *this != other;
-  }
-
-};
 
 // String literal template for compile-time string handling
 template <size_t N> struct StringLiteral {
@@ -97,11 +22,11 @@ template <size_t N> struct StringLiteral {
   }
 };
 
-// with_href, with_id, with_src
+// get these wrapped up correctly
 #define WITH_FOO(Foo)                                                          \
   template <typename T> constexpr auto with_##Foo(const T &t) const {          \
     auto copy = *this;                                                         \
-    copy.attributes.Foo = t;                                                   \
+    copy.attributes.custom[0] = {#Foo, t};                                     \
     return copy;                                                               \
   }
 
@@ -110,7 +35,16 @@ template <StringLiteral TagName, StringLiteral ClassNames = "",
 struct tag_base {
 private:
   struct Attributes {
-    StringImpl style{}, id{}, href{}, src{}, alt{}, type{}, onclick{};
+    std::array<std::pair<StringImpl, std::optional<StringImpl>>, 10> custom{
+      {"id", std::nullopt},
+      {"href", std::nullopt},
+      {"src", std::nullopt},
+      {"alt", std::nullopt},
+      {"type", std::nullopt},
+      {"onclick", std::nullopt},
+      {"style", std::nullopt},
+      {"class", std::nullopt},
+    };
   };
   Attributes attributes{};
   StringImpl content{};
@@ -177,40 +111,14 @@ public:
       s += ClassNames.value;
       s += "'";
     }
-    if (!attributes.style.empty()) {
-      s += " style='";
-      s += attributes.style;
-      s += "'";
-    }
-    if (!attributes.id.empty()) {
-      s += " id='";
-      s += attributes.id;
-      s += "'";
-    }
-    if (!attributes.href.empty()) {
-      s += " href='";
-      s += attributes.href;
-      s += "'";
-    }
-    if (!attributes.src.empty()) {
-      s += " src='";
-      s += attributes.src;
-      s += "'";
-    }
-    if (!attributes.alt.empty()) {
-      s += " alt='";
-      s += attributes.alt;
-      s += "'";
-    }
-    if (!attributes.type.empty()) {
-      s += " type='";
-      s += attributes.type;
-      s += "'";
-    }
-    if (!attributes.onclick.empty()) {
-      s += " onclick='";
-      s += attributes.onclick;
-      s += "'";
+    for (const auto &[key, value] : attributes.custom) {
+      if (!value.empty()) {
+        s += " ";
+        s += key;
+        s += "='";
+        s += value;
+        s += "'";
+      }
     }
 
     s += ">";

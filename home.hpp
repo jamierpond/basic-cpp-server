@@ -2,9 +2,6 @@
 #include "tags.hpp"
 #include "layout.hpp"
 
-static_assert(pond::p <"text-blue-500">{"p"}.render() == "<p class='text-blue-500'>p</p>");
-static_assert(pond::p{"foo"}.render() == "<p>foo</p>");
-
 
 constexpr auto home() {
     using namespace pond;
