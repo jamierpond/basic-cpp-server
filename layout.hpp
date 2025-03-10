@@ -23,7 +23,7 @@ constexpr auto layout(T&&... body) {
         html::div<"w-full flex flex-col items-center">{
           a<"text-4xl font-bold text-center">{"Jamie Pond"}.with_href(links::LINKEDIN),
           html::div<"flex flex-col text-center items-center justify-center p-8 space-y-8">{
-            {std::forward<T>(body)...}
+            std::forward<T>(body)...
           }
       }
     };

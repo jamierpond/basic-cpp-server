@@ -38,7 +38,7 @@ constexpr auto home() {
                 a{img<"w-8 h-8">{}.with_src(links::LINKEDIN_IMG)}.with_href(links::LINKEDIN),
                 a{img<"w-8 h-8">{}.with_src(links::TWITTER_IMG)}.with_href(links::TWITTER)
             }
-    );
+    ).render();
 }
 
 static_assert(layout(html::p{"foo"}).render().length() > 0);

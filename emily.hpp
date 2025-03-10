@@ -12,6 +12,6 @@ constexpr auto emily() {
             a <"text-blue-500">{
             "Click here to go back to the home page!"
             }.with_href("/")
-    );
+    ).render();
 }
 
