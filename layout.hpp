@@ -18,7 +18,7 @@ namespace links {
 template <typename ...T>
 constexpr auto layout(T&&... body) {
     using namespace html;
-    return html::div<"w-full">{{
+    return html::div<"w-full flex flex-col items-center">{{
         a<"text-4xl font-bold text-center">{"Jamie Pond"}.with_href(links::LINKEDIN),
         h3<"text-2xl font-bold text-center mt-4">{a{"jamie@pond.audio"}.with_href(links::EMAIL)},
         html::div<"flex flex-col text-center items-center justify-center p-8 space-y-8">{{
