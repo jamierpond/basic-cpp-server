@@ -11,7 +11,6 @@ constexpr auto home() {
     return layout(
             "Jamie Pond",
 
-            h3<"text-2xl font-bold text-center mt-4">{a{"jamie@pond.audio"}.with_href(links::EMAIL)},
             p {
                "I'm Lead Audio Software Engineer at ",
                a{"mayk"}.with_href(links::MAYK)

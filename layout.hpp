@@ -15,6 +15,19 @@ namespace links {
   constexpr auto TWITTER_IMG = "https://seeklogo.com/images/T/twitter-x-logo-101C7D2420-seeklogo.com.png?v=638258862800000000";
 };
 
+constexpr auto NavBar() {
+  using namespace pond;
+  return pond::nav<"bg-white shadow-md p-4 w-full fixed top-0 left-0 flex justify-between items-center">{
+    pond::div<"text-xl font-bold text-gray-900 ml-4">{"Jamie Pond"},
+    pond::div<"flex space-x-6 mr-4">{
+      a<"text-gray-700 hover:text-blue-500 transition-all">{"LinkedIn"}.with_href(links::LINKEDIN),
+      a<"text-gray-700 hover:text-blue-500 transition-all">{"Twitter"}.with_href(links::TWITTER),
+      a<"text-gray-700 hover:text-blue-500 transition-all">{"Email"}.with_href(links::EMAIL)
+    }
+  };
+}
+
+
 template <typename ...T>
 constexpr auto layout(std::string title, T&&... body) {
   using namespace pond;
@@ -28,9 +41,9 @@ constexpr auto layout(std::string title, T&&... body) {
 
       pond::body<"text-gray-900 p-4 min-h-screen flex items-center justify-center"> {
 
+      NavBar(),
       pond::div <"min-h-screen flex items-center justify-center"> {
         pond::div<"w-full flex flex-col items-center">{
-          a<"text-4xl font-bold text-center">{"Jamie Pond"}.with_href(links::LINKEDIN),
           pond::div<"flex flex-col text-center items-center justify-center p-8 space-y-8">{
             std::forward<T>(body)...
           }
