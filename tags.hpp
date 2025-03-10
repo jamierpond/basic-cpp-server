@@ -97,12 +97,20 @@ template <size_t N> struct StringLiteral {
   }
 };
 
+// with_href, with_id, with_src
+#define WITH_FOO(Foo)                                                          \
+  template <typename T> constexpr auto with_##Foo(const T &t) const {          \
+    auto copy = *this;                                                         \
+    copy.attributes.Foo = t;                                                   \
+    return copy;                                                               \
+  }
+
 template <StringLiteral TagName, StringLiteral ClassNames = "",
           typename StringImpl = std::string>
 struct tag_base {
 private:
   struct Attributes {
-    StringImpl style{}, id{}, href{}, src{};
+    StringImpl style{}, id{}, href{}, src{}, alt{}, type{}, onclick{};
   };
   Attributes attributes{};
   StringImpl content{};
@@ -138,17 +146,16 @@ public:
         children(other.children) {}
 
   // Accessors that return a new copy with attribute set
-  constexpr auto with_href(const StringImpl &href) const {
-    tag_base copy = *this;
-    copy.attributes.href = href;
-    return copy;
-  }
+  WITH_FOO(style)
+  WITH_FOO(id)
+  WITH_FOO(href)
+  WITH_FOO(src)
+  WITH_FOO(alt)
+  WITH_FOO(type)
+  WITH_FOO(onclick)
 
-  constexpr auto with_src(const StringImpl &src) const {
-    tag_base copy = *this;
-    copy.attributes.src = src;
-    return copy;
-  }
+
+
 
   // Helper to add a child tag or string
   template <typename T> constexpr void add_child(const T &child) {
@@ -190,6 +197,22 @@ public:
       s += attributes.src;
       s += "'";
     }
+    if (!attributes.alt.empty()) {
+      s += " alt='";
+      s += attributes.alt;
+      s += "'";
+    }
+    if (!attributes.type.empty()) {
+      s += " type='";
+      s += attributes.type;
+      s += "'";
+    }
+    if (!attributes.onclick.empty()) {
+      s += " onclick='";
+      s += attributes.onclick;
+      s += "'";
+    }
+
     s += ">";
 
     if (!content.empty()) {
