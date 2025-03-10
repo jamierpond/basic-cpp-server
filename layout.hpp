@@ -19,13 +19,13 @@ template <typename ...T>
 constexpr auto layout(T&&... body) {
     using namespace html;
     return
-      html::div <"min-h-screen flex items-center justify-center"> {{
-        html::div<"w-full flex flex-col items-center">{{
+      html::div <"min-h-screen flex items-center justify-center"> {
+        html::div<"w-full flex flex-col items-center">{
           a<"text-4xl font-bold text-center">{"Jamie Pond"}.with_href(links::LINKEDIN),
           html::div<"flex flex-col text-center items-center justify-center p-8 space-y-8">{
             {std::forward<T>(body)...}
           }
-      }}
-    }};
+      }
+    };
 }
 
