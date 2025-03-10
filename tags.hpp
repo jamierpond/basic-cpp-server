@@ -32,6 +32,9 @@ public:
   template <size_t N>
   constexpr tag_base(const std::string (&str)[N]) : content(str) {}
 
+  template <typename ...T>
+  constexpr tag_base(const T&...) {}
+
   // Constructor for text content from string literal
   constexpr tag_base(const char *str) : content(str) {}
 
@@ -82,14 +85,9 @@ public:
     }
   }
 
-  constexpr std::string operator+(const std::string &str) {
-    auto copy = *this;
-    copy.content += str;
-    return copy;
-  }
-
   constexpr operator std::string() const { return render(); }
 
+  // this function is a messss but it's a contained mess :)
   constexpr std::string render() const {
     std::string s{};
 
@@ -144,20 +142,6 @@ public:
   }
 };
 
-// template <StringLiteral TagName, StringLiteral ClassNames = "">
-// constexpr auto operator+(const std::string &lhs,
-//                          const tag_base<TagName, ClassNames> &rhs) {
-//   return tag_base<TagName, ClassNames>{lhs, rhs};
-// }
-
-// implicit cast from string to tag_base
-template <StringLiteral TagName, StringLiteral ClassNames = "">
-constexpr std::string operator+(const std::string &lhs,
-                         const tag_base<TagName, ClassNames> &rhs) {
-  return tag_base<TagName, ClassNames>{lhs, rhs};
-}
-
-
 
 #define CREATE_TAG(Tag)                                                        \
   template <StringLiteral ClassName = "">                                      \
@@ -168,6 +152,9 @@ constexpr std::string operator+(const std::string &lhs,
                                                                                \
   template <StringLiteral ClassName = "">                                      \
   Tag(const std::string &) -> Tag<ClassName>;                                  \
+                                                                               \
+  template <StringLiteral ClassName = "", typename ...T>                      \
+  Tag(const T&...) -> Tag<ClassName>;                                                 \
                                                                                \
   template <StringLiteral ClassName = ""> Tag(const char *) -> Tag<ClassName>;
 
@@ -219,6 +206,12 @@ consteval auto home() {
 static_assert(div{{
   html::a{"This is a simple HTTP server written in C++ using only the standard library."}
 }}.render() == "<div><a>This is a simple HTTP server written in C++ using only the standard library.</a></div>");
+
+static_assert(h1{{
+    "Hello, World!",
+    a{"click me"}
+}}.render() == "<h1>Hello, World!<a>click me</a></h1>");
+
 
 
 } // namespace h
