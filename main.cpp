@@ -2,7 +2,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include "tags.hpp"
+
+#include "home.hpp"
+#include "emily.hpp"
 
 constexpr static auto PORT = 3000;
 
@@ -24,19 +26,6 @@ constexpr auto create_http_response_from_html(const std::string& body) {
            "Connection: close\r\n"
            "\r\n" + html;
 }
-
-auto home () {
-    using namespace html;
-    return html::div <"flex flex-col bg-black text-white items-center justify-center h-screen"> {{
-        h1{"pond.audio"},
-        p{"This is a simple HTTP server written in C++ using only the standard library."},
-        a<"bg-blue-500 text-white">{"This is a simple HTTP server written in C++ using only the standard library."}
-          .with_href("https://example.com"),
-        p{"cool cool"},
-        p{"i am updating"},
-        p{"This is a simple HTTP server written in C++ using only the standard library."}
-    }};
-};
 
 
 // Extract the requested path from the HTTP request
@@ -109,6 +98,10 @@ int main() {
 
         if (path == "/") {
             response = create_http_response_from_html(home());
+        }
+
+        if (path == "/emily") {
+            response = create_http_response_from_html(emily());
         }
 
         send(new_socket, response.c_str(), response.size(), 0);

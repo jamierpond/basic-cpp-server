@@ -16,7 +16,7 @@ template <StringLiteral TagName, StringLiteral ClassNames = "">
 struct tag_base {
 private:
   struct Attributes {
-    std::string style, id, href;
+    std::string style, id, href, src;
   };
   Attributes attributes;
   std::string content;
@@ -57,6 +57,12 @@ public:
     return copy;
   }
 
+  constexpr auto with_src(const std::string &src) {
+    auto copy = *this;
+    copy.attributes.src = src;
+    return copy;
+  }
+
   // Accepts an initializer list of valid child types
   template <typename T>
   constexpr tag_base(std::initializer_list<T> init_children) {
@@ -74,6 +80,12 @@ public:
     for (const auto &child : init_children) {
       children.push_back(child);
     }
+  }
+
+  constexpr std::string operator+(const std::string &str) {
+    auto copy = *this;
+    copy.content += str;
+    return copy;
   }
 
   constexpr operator std::string() const { return render(); }
@@ -108,6 +120,12 @@ public:
       s += "'";
     }
 
+    if (!attributes.src.empty()) {
+      s += " src='";
+      s += attributes.src;
+      s += "'";
+    }
+
     s += ">";
 
     if (!content.empty()) {
@@ -126,7 +144,20 @@ public:
   }
 };
 
-// using p = tag_base<"p", ClassName>;
+// template <StringLiteral TagName, StringLiteral ClassNames = "">
+// constexpr auto operator+(const std::string &lhs,
+//                          const tag_base<TagName, ClassNames> &rhs) {
+//   return tag_base<TagName, ClassNames>{lhs, rhs};
+// }
+
+// implicit cast from string to tag_base
+template <StringLiteral TagName, StringLiteral ClassNames = "">
+constexpr std::string operator+(const std::string &lhs,
+                         const tag_base<TagName, ClassNames> &rhs) {
+  return tag_base<TagName, ClassNames>{lhs, rhs};
+}
+
+
 
 #define CREATE_TAG(Tag)                                                        \
   template <StringLiteral ClassName = "">                                      \
@@ -140,8 +171,10 @@ public:
                                                                                \
   template <StringLiteral ClassName = ""> Tag(const char *) -> Tag<ClassName>;
 
+
 CREATE_TAG(div)
 CREATE_TAG(p)
+CREATE_TAG(b)
 CREATE_TAG(h1)
 CREATE_TAG(h2)
 CREATE_TAG(h3)
