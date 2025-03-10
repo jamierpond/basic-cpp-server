@@ -25,10 +25,12 @@ template <size_t N> struct StringLiteral {
     return copy;                                                               \
   }
 
-template <StringLiteral TagName, StringLiteral ClassNames = "",
-          typename StringImpl = std::string>
+template <
+  StringLiteral TagName,
+  StringLiteral ClassNames = "",
+  typename StringImpl = std::string
+>
 struct tag_base {
-private:
   struct Attributes {
     StringImpl style{}, id{}, href{}, src{}, alt{}, type{}, onclick{};
   };

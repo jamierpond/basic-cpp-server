@@ -101,7 +101,7 @@ int main() {
 
         read(new_socket, buffer, sizeof(buffer));
         std::string request(buffer);
-        std::cout << "Received request:\n" << request << "\n";
+        // std::cout << "Received request:\n" << request << "\n";
 
         std::string path = get_request_path(request);
         std::string response;
@@ -112,15 +112,18 @@ int main() {
         std::cout << "Session ID: " << session_id << "\n";
 
         if (path == "/") {
-            response = create_http_response_from_html(home());
+            response = create_http_response_from_html(home(path));
         }
 
-        if (path == "/emily") {
+        else if (path == "/emily") {
             response = create_http_response_from_html(emily());
         }
 
-        if (path == "/dash") {
+        else if (path == "/dash") {
             response = create_http_response_from_html(dashboard::dashboard());
+        }
+        else {
+            response = create_http_response_from_html(home(path));
         }
 
         send(new_socket, response.c_str(), response.size(), 0);

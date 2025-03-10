@@ -1,16 +1,36 @@
 #pragma once
 #include "tags.hpp"
 #include "layout.hpp"
+#include "encoding.hpp"
+#include <cstdint>
+#include <iostream>
 
-static_assert(pond::p <"text-blue-500">{"p"}.render() == "<p class='text-blue-500'>p</p>");
-static_assert(pond::p{"foo"}.render() == "<p>foo</p>");
+struct CounterState {
+    uint64_t count = 0;
+};
+
+using Encoding = StringEncoder<char_sets::Base62Encoding, uint64_t, true, true>;
 
 
-constexpr auto home() {
+constexpr auto home(const std::string_view& path) {
+    // trim the leading slash
+    auto count_str = path.substr(1);
+
+    auto count = uint64_t{0};
+    try {
+      count = Encoding::decode(count_str);
+    } catch (const std::runtime_error &e) {
+      std::cerr << "Invalid count: " << count_str << "\n";
+      count = 0;
+    }
+
+    auto encode = [] (const CounterState &state) {
+        return Encoding::encode(state.count);
+    };
+
     using namespace pond;
     return layout(
             "Jamie Pond",
-
             p {
                "I'm Lead Audio Software Engineer at ",
                a{"mayk"}.with_href(links::MAYK)
@@ -23,6 +43,19 @@ constexpr auto home() {
             p {
               "I spoke at ADC 2021 about ", a{span<"font-bold text-blue-500">{"using compiler intrinsics in your code"}}
               .with_href(links::ADC_2021)
+            },
+            a <"bg-blue-500 text-white p-2 rounded-md">{
+              "Increment the counter!"
+            }.with_href("/" + encode({.count = count + 1})),
+            a <"bg-blue-500 text-white p-2 rounded-md">{
+              "Decrement the counter!"
+            }.with_href("/" + encode({.count = count - 1})),
+            a <"bg-blue-500 text-white p-2 rounded-md">{
+              "Reset the counter!"
+            }.with_href("/" + encode({.count = 0})),
+            p {
+              "You have clicked the button ", span<"font-bold">{std::to_string(count)},
+              " times."
             },
             a <"text-blue-500"> {
               "Click here to go to emily's page"

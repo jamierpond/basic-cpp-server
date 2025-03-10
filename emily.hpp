@@ -3,7 +3,7 @@
 constexpr auto increment_script = R"(
 document.addEventListener("DOMContentLoaded", () => {
 let count = localStorage.getItem("count") || 0;
-document.getElementById("counter").innerText = count;
+document.getElementById("count").innerText = count;
 });
 
 function increment() {
@@ -12,6 +12,9 @@ function increment() {
     document.getElementById("counter").innerText = count;
 }
 )";
+
+constexpr auto use_state(std::string id) {
+}
 
 constexpr auto emily() {
     using namespace pond;
