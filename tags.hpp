@@ -1,72 +1,81 @@
+#pragma once
+
 #include <string>
+#include <vector>
+#include <initializer_list>
+#include <sstream>
 
-template<size_t N>
+// String literal template for compile-time string handling
+template <size_t N>
 struct StringLiteral {
-    constexpr StringLiteral(const char (&str)[N]) {
-      std::copy_n(str, N, value); }
-
     char value[N];
-    auto operator<=>(const StringLiteral&) const = default;
-    bool operator==(const StringLiteral&) const  = default;
+    constexpr StringLiteral(const char (&str)[N]) {
+        std::copy_n(str, N, value);
+    }
 };
 
-
-template <StringLiteral TagType, StringLiteral ClassName = "", typename... Children>
+template <StringLiteral TagName, StringLiteral ClassNames = "">
 struct tag_base {
-  // tag_base(Children&&... children) : children{std::forward<Children>(children)...} {}
+private:
+    std::string content;
+    std::vector<std::string> children;
 
-  static constexpr auto tag_name = TagType;
-  static constexpr auto class_name = ClassName;
+public:
+    // Default constructor for empty tags
+    tag_base() = default;
 
-  std::string content = "";
-  tag_base(const std::string& str) : content(str) {}
-  tag_base(std::initializer_list<tag_base> children) : children{children} {}
+    // Constructor for text content
+    tag_base(const std::string& str) : content(str) {}
 
-  std::tuple<Children...> children;
+    // Constructor for text content from string literal
+    tag_base(const char* str) : content(str) {}
 
-  std::string render() const {
-    using s = std::string;
-    auto tag = s{tag_name.value};
-    s children_str{};
+    // Generic constructor for a single child
+    template <typename T>
+    tag_base(const T& child) {
+        if constexpr (std::is_convertible_v<T, std::string>) {
+            content = child;
+        } else {
+            children.push_back(child.render());
+        }
+    }
 
-    std::apply([&children_str](const auto&... child) {
-      ((children_str += child.render()), ...);
-    }, children);
+    // Constructor for initializer list (multiple children)
+    tag_base(std::initializer_list<std::string> init_children) {
+        for (const auto& child : init_children) {
+            children.push_back(child);
+        }
+    }
 
-    return "<" + tag + " class=\"" + class_name.value + "\">" + children_str + "</" + tag + ">";
-  }
+    // Render the tag with its content and children
+    std::string render() const {
+        std::stringstream ss;
+
+        ss << "<" << TagName.value;
+
+        // Add class attribute if not empty
+        if constexpr (sizeof(ClassNames.value) > 1) {
+            ss << " class='" << ClassNames.value << "'";
+        }
+
+        ss << ">";
+
+        // Add content if present
+        if (!content.empty()) {
+            ss << content;
+        }
+
+        // Add all children
+        for (const auto& child : children) {
+            ss << child;
+        }
+
+        ss << "</" << TagName.value << ">";
+
+        return ss.str();
+    }
 };
 
-namespace tags {
 
-template<StringLiteral ClassName = "">
-struct p : tag_base<"p", ClassName> {};
-
-namespace {
-  template<StringLiteral ClassName = "">
-  struct div : tag_base<"div", ClassName> {};
-
-  template<StringLiteral ClassName = "">
-  div(const std::string& str) -> div<ClassName>;
-}
-
-template<StringLiteral ClassName = "">
-struct h1 : tag_base<"h1", ClassName> {};
-template<StringLiteral ClassName = "">
-h1(const std::string& str) -> h1<ClassName>;
-
-template<StringLiteral ClassName = "">
-struct nav : tag_base<"nav", ClassName> {};
-
-template<StringLiteral ClassName = "">
-struct a : tag_base<"a", ClassName> {};
-
-
-static_assert(tag_base<"p">::tag_name == "p");
-static_assert(tag_base<"a">::tag_name == "a");
-static_assert(tag_base<"div">::tag_name == "div");
-static_assert(tag_base<"nav">::tag_name == "nav");
-
-
-}; // namespace tags
-
+template <StringLiteral ClassNames = "">
+using foo = tag_base<"div", ClassNames>;
