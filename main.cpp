@@ -40,6 +40,17 @@ constexpr std::string get_request_path(const std::string& request) {
     return request.substr(start, end - start);
 }
 
+constexpr std::string get_session_id(const std::string& request) {
+    size_t start = request.find("Cookie: ");
+    if (start == std::string::npos) return "";
+    start += 8; // Move past "Cookie: "
+
+    size_t end = request.find(";", start);
+    if (end == std::string::npos) return "";
+
+    return request.substr(start, end - start);
+}
+
 static_assert(get_request_path("GET / HTTP/1.1") == "/");
 static_assert(get_request_path("GET /about HTTP/1.1") == "/about");
 static_assert(get_request_path("GET /contact HTTP/1.1") == "/contact");
@@ -95,6 +106,11 @@ int main() {
 
         std::string path = get_request_path(request);
         std::string response;
+
+        // get session id from cookie
+
+        auto session_id = get_session_id(request);
+        std::cout << "Session ID: " << session_id << "\n";
 
         if (path == "/") {
             response = create_http_response_from_html(home());
