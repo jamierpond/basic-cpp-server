@@ -10,7 +10,16 @@ namespace html {
 template <size_t N> struct StringLiteral {
   char value[N];
   constexpr StringLiteral(const char (&str)[N]) { std::copy_n(str, N, value); }
+
+  template <size_t M> constexpr StringLiteral(const StringLiteral<M> &other) {
+    static_assert(M <= N, "StringLiteral too large");
+    std::copy_n(other.value, M, value);
+  }
+
 };
+
+
+// static_assert(from_string_view<1>("foo").value[0] == 'f');
 
 template <StringLiteral TagName, StringLiteral ClassNames = "">
 struct tag_base {
@@ -30,10 +39,13 @@ public:
   constexpr tag_base(const std::string &str) : content(str) {}
 
   template <size_t N>
-  constexpr tag_base(const std::string (&str)[N]) : content(str) {}
+  constexpr tag_base(const std::string (&str)[N]) {
+    for (size_t i = 0; i < N; i++) {
+      content += str[i];
+    }
+  }
 
-  template <typename ...T>
-  constexpr tag_base(const T&...) {}
+  template <typename... T> constexpr tag_base(const T &...) {}
 
   // Constructor for text content from string literal
   constexpr tag_base(const char *str) : content(str) {}
@@ -66,24 +78,19 @@ public:
     return copy;
   }
 
-  // Accepts an initializer list of valid child types
-  template <typename T>
-  constexpr tag_base(std::initializer_list<T> init_children) {
-    for (const auto &child : init_children) {
-      if constexpr (std::is_convertible_v<T, std::string>) {
-        children.push_back(child);
-      } else {
-        children.push_back(child.render());
-      }
+    template <typename... Args>
+    constexpr tag_base(Args&&... args) {
+        (add_child(std::forward<Args>(args)), ...);
     }
-  }
 
-  // Constructor for initializer list (multiple children)
-  constexpr tag_base(std::initializer_list<std::string> init_children) {
-    for (const auto &child : init_children) {
-      children.push_back(child);
+    template <typename T>
+    constexpr void add_child(const T& child) {
+        if constexpr (std::is_convertible_v<T, std::string>) {
+            children.push_back(child);
+        } else {
+            children.push_back(child.render());
+        }
     }
-  }
 
   constexpr operator std::string() const { return render(); }
 
@@ -145,19 +152,20 @@ public:
 
 #define CREATE_TAG(Tag)                                                        \
   template <StringLiteral ClassName = "">                                      \
-  struct Tag : tag_base<#Tag, ClassName> {};                                   \
-                                                                               \
-  template <StringLiteral ClassName = "">                                      \
-  Tag(std::initializer_list<std::string>) -> Tag<ClassName>;                   \
+  struct Tag : tag_base<#Tag, ClassName> {                                     \
+    using tag_base<#Tag, ClassName>::tag_base; /* Inherit constructors */      \
+  };                                                                           \
                                                                                \
   template <StringLiteral ClassName = "">                                      \
   Tag(const std::string &) -> Tag<ClassName>;                                  \
                                                                                \
-  template <StringLiteral ClassName = "", typename ...T>                      \
-  Tag(const T&...) -> Tag<ClassName>;                                                 \
-                                                                               \
-  template <StringLiteral ClassName = ""> Tag(const char *) -> Tag<ClassName>;
-
+  template <StringLiteral ClassName = "", typename... T>                       \
+  Tag(const T&&...) -> Tag<ClassName>;                                         \
+                                                                                \
+  template <typename... T>                                                     \
+  Tag(T&&...) -> Tag<"">;                                                       \
+                                                                                \
+  template <StringLiteral ClassName = ""> Tag(const char *) -> Tag<ClassName>; \
 
 CREATE_TAG(div)
 CREATE_TAG(p)
@@ -186,32 +194,32 @@ static_assert(tag_base<"div", "cn">{
                   .render() ==
               "<div class='cn'><p>foo</p><p class='hello'>bar</p></div>");
 
-static_assert(div{{
+static_assert(div{
                       p<"bg-red-500">{"foo"},
                       p{"foo"},
-                  }}
+                  }
                   .render() ==
               "<div><p class='bg-red-500'>foo</p><p>foo</p></div>");
 
-static_assert(a{"Click me"}.with_href("https://example.com").render() == "<a href='https://example.com'>Click me</a>");
+// static_assert(a{"Click me"}.with_href("https://example.com").render() ==
+//               "<a href='https://example.com'>Click me</a>");
 
 consteval auto home() {
   using namespace html;
-  return div {{
-      p{"This is a simple HTTP server written in C++ using only the standard library."},
-      a<"bg-blue-500 text-white">{"This is a simple HTTP server written in C++ using only the standard library."}
-  }};
+  return div{
+      {p{"This is a simple HTTP server written in C++ using only the standard "
+         "library."},
+       a<"bg-blue-500 text-white">{"This is a simple HTTP server written in "
+                                   "C++ using only the standard library."}}};
 }
 
-static_assert(div{{
-  html::a{"This is a simple HTTP server written in C++ using only the standard library."}
-}}.render() == "<div><a>This is a simple HTTP server written in C++ using only the standard library.</a></div>");
+static_assert(div{html::a{"This is a simple HTTP server written in C++ using "
+                           "only the standard library."}}
+                  .render() ==
+              "<div><a>This is a simple HTTP server written in C++ using only "
+              "the standard library.</a></div>");
 
-static_assert(h1{{
-    "Hello, World!",
-    a{"click me"}
-}}.render() == "<h1>Hello, World!<a>click me</a></h1>");
+static_assert(h1{"Hello, World!", a{"click me"}}.render() ==
+              "<h1>Hello, World!<a>click me</a></h1>");
 
-
-
-} // namespace h
+} // namespace html

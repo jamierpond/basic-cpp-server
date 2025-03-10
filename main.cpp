@@ -17,8 +17,8 @@ constexpr auto create_http_response_from_html(const std::string& body) {
                        "<script src='https://unpkg.com/@tailwindcss/browser@4'></script>"
                        "<title>My C++ Server</title>"
                        "</head>"
-                       "<body>" + std::string{body} +
-                       "</body></html>";
+                       "<body class='text-gray-900 p-4 min-h-screen flex items-center justify-center'><div class='max-w-4xl'>" + std::string{body} +
+                       "</div></body></html>";
 
     return "HTTP/1.1 200 OK\r\n"
            "Content-Type: text/html\r\n"

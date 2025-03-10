@@ -30,10 +30,10 @@ constexpr auto home() {
               .with_href(links::ADC_2023)
             }},
             p {"I'm a mentor in the ADC 2023 & 2024 Mentorship Program."},
-            p {
+            p {{
               a<"underline">{"Please feel free to hit me up!"}
               .with_href(links::EMAIL)
-            },
+            }},
             html::div<"flex flex-row space-x-4">{{
                 a{img<"w-8 h-8">{}.with_src(links::LINKEDIN_IMG)}.with_href(links::LINKEDIN),
                 a{img<"w-8 h-8">{}.with_src(links::TWITTER_IMG)}.with_href(links::TWITTER)
