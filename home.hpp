@@ -9,6 +9,7 @@ constexpr auto home() {
     using namespace pond;
     return layout(
             "Jamie Pond",
+            script {"console.log('Yes, you can even use JavaScript!')"},
             h3<"text-2xl font-bold text-center mt-4">{a{"jamie@pond.audio"}.with_href(links::EMAIL)},
             p {
                "I'm Lead Audio Software Engineer at ",
