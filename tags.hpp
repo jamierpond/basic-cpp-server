@@ -74,9 +74,6 @@ public:
   WITH_FOO(type)
   WITH_FOO(onclick)
 
-
-
-
   // Helper to add a child tag or string
   template <typename T> constexpr void add_child(const T &child) {
     if constexpr (std::is_convertible_v<T, StringImpl>) {
@@ -97,6 +94,7 @@ public:
       s += ClassNames.value;
       s += "'";
     }
+    // todo make these iteerable!!!!!
     if (!attributes.style.empty()) {
       s += " style='";
       s += attributes.style;
