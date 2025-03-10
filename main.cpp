@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "home.hpp"
+#include "dashboard.hpp"
 #include "emily.hpp"
 
 constexpr static auto PORT = 3000;
@@ -116,6 +117,10 @@ int main() {
 
         if (path == "/emily") {
             response = create_http_response_from_html(emily());
+        }
+
+        if (path == "/dash") {
+            response = create_http_response_from_html(dashboard::dashboard());
         }
 
         send(new_socket, response.c_str(), response.size(), 0);

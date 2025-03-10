@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace html {
+namespace pond {
 
 template <size_t N, typename T>
 struct static_string {
@@ -13,7 +13,7 @@ struct static_string {
   size_t size = 0;
 
   constexpr static_string() = default;
-  constexpr static_string(const T (&str)[N]) {
+  constexpr explicit static_string(const T (&str)[N]) {
     std::copy_n(str, N, data.begin());
     size = N;
   }
@@ -82,7 +82,7 @@ struct static_string {
   operator std::string() const { return std::string(data.begin(), data.begin() + size); }
 
   constexpr bool operator!=(const static_string &other) const {
-    return !(*this == other);
+    return *this != other;
   }
 
 };
@@ -98,14 +98,14 @@ template <size_t N> struct StringLiteral {
 };
 
 template <StringLiteral TagName, StringLiteral ClassNames = "",
-          typename StringImpl = static_string<512, char>>
+          typename StringImpl = std::string>
 struct tag_base {
 private:
   struct Attributes {
     StringImpl style{}, id{}, href{}, src{};
   };
-  Attributes attributes;
-  StringImpl content;
+  Attributes attributes{};
+  StringImpl content{};
   std::vector<StringImpl> children{};
 
 public:
@@ -232,7 +232,35 @@ CREATE_TAG(h3)
 CREATE_TAG(h4)
 CREATE_TAG(h5)
 CREATE_TAG(h6)
+CREATE_TAG(html)
 CREATE_TAG(span)
+CREATE_TAG(body)
+CREATE_TAG(head)
+CREATE_TAG(title)
+CREATE_TAG(meta)
+CREATE_TAG(link)
+CREATE_TAG(script)
+CREATE_TAG(style)
+CREATE_TAG(header)
+CREATE_TAG(footer)
+
+CREATE_TAG(ul)
+CREATE_TAG(ol)
+CREATE_TAG(li)
+CREATE_TAG(nav)
+CREATE_TAG(section)
+CREATE_TAG(article)
+CREATE_TAG(main)
+CREATE_TAG(aside)
+CREATE_TAG(table)
+CREATE_TAG(tr)
+CREATE_TAG(th)
+CREATE_TAG(td)
+CREATE_TAG(thead)
+CREATE_TAG(tbody)
+CREATE_TAG(tfoot)
+CREATE_TAG(col)
+
 
 CREATE_TAG(a)
 CREATE_TAG(img)

@@ -2,12 +2,13 @@
 #include "tags.hpp"
 #include "layout.hpp"
 
-static_assert(html::p <"text-blue-500">{"p"}.render() == "<p class='text-blue-500'>p</p>");
-static_assert(html::p{"foo"}.render() == "<p>foo</p>");
+static_assert(pond::p <"text-blue-500">{"p"}.render() == "<p class='text-blue-500'>p</p>");
+static_assert(pond::p{"foo"}.render() == "<p>foo</p>");
 
 constexpr auto home() {
-    using namespace html;
+    using namespace pond;
     return layout(
+            "Jamie Pond",
             h3<"text-2xl font-bold text-center mt-4">{a{"jamie@pond.audio"}.with_href(links::EMAIL)},
             p {
                "I'm Lead Audio Software Engineer at ",
@@ -34,12 +35,12 @@ constexpr auto home() {
               a<"text-blue-500 underline">{"Please feel free to hit me up!"}
               .with_href(links::EMAIL)
             },
-            html::div<"flex flex-row space-x-4">{
+            pond::div<"flex flex-row space-x-4">{
                 a{img<"w-8 h-8">{}.with_src(links::LINKEDIN_IMG)}.with_href(links::LINKEDIN),
                 a{img<"w-8 h-8">{}.with_src(links::TWITTER_IMG)}.with_href(links::TWITTER)
             }
     ).render();
 }
 
-static_assert(layout(html::p{"foo"}).render().length() > 0);
+static_assert(layout("test", pond::p{"foo"}).render().length() > 0);
 

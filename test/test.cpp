@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-using namespace html;
+using namespace pond;
 
 static_assert(p<"bg-red-500">{"foo"}.render() ==
               "<p class='bg-red-500'>foo</p>");
@@ -16,7 +16,7 @@ static_assert(tag_base<"div", "cn">{
                   .render() ==
               "<div class='cn'><p>foo</p><p class='hello'>bar</p></div>");
 
-static_assert(html::div{
+static_assert(pond::div{
                       p<"bg-red-500">{"foo"},
                       p{"foo"},
                   }
@@ -26,22 +26,22 @@ static_assert(html::div{
 static_assert(a{"Click me"}.with_href("https://example.com").render() == "<a href='https://example.com'>Click me</a>");
 
 consteval auto home() {
-  using namespace html;
-  return html::div {
+  using namespace pond;
+  return pond::div {
       p{"This is a simple HTTP server written in C++ using only the standard library."},
       a<"bg-blue-500 text-white">{"This is a simple HTTP server written in C++ using only the standard library."}
   };
 }
 
-static_assert(html::div{
-  html::a{"This is a simple HTTP server written in C++ using only the standard library."}
+static_assert(pond::div{
+  pond::a{"This is a simple HTTP server written in C++ using only the standard library."}
 }.render() == "<div><a>This is a simple HTTP server written in C++ using only the standard library.</a></div>");
 
 TEST_CASE("Hello, World!") {}
 
 
 TEST_CASE("a with href") {
-  auto got = html::a{"Click me"}.with_href("https://example.com").render();
+  auto got = pond::a{"Click me"}.with_href("https://example.com").render();
   std::cout << std::string{got} << std::endl;
   auto expexted = "<a href='https://example.com'>Click me</a>";
   REQUIRE(got == expexted);

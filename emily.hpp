@@ -1,8 +1,9 @@
 #include "layout.hpp"
 
 constexpr auto emily() {
-    using namespace html;
+    using namespace pond;
     return layout(
+            "Emily Dzurilla",
             p {
                "Hey Emily, this page is for you!"
             },
