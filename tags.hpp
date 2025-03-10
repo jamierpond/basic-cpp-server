@@ -4,6 +4,7 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+#include "static_str.hpp"
 
 namespace html {
 
@@ -17,27 +18,28 @@ template <size_t N> struct StringLiteral {
   }
 };
 
-template <StringLiteral TagName, StringLiteral ClassNames = "">
+template <StringLiteral TagName, StringLiteral ClassNames = "",
+          typename StringImpl = std::string>
 struct tag_base {
 private:
   struct Attributes {
-    std::string style{}, id{}, href{}, src{};
+    StringImpl style{}, id{}, href{}, src{};
   };
   Attributes attributes;
-  std::string content;
-  std::vector<std::string> children;
+  StringImpl content;
+  std::vector<StringImpl> children;
 
 public:
   // Constructors for text content
   constexpr tag_base() = default;
 
   constexpr tag_base(const char *str) : content(str) {}
-  constexpr tag_base(const std::string &s) : content(s) {}
+  constexpr tag_base(const StringImpl &s) : content(s) {}
 
   // Single-argument constructor: if it's string-like, use it as content;
   // otherwise, assume it's another tag and call .render()
   template <typename T> constexpr tag_base(const T &child) {
-    if constexpr (std::is_convertible_v<T, std::string>) {
+    if constexpr (std::is_convertible_v<T, StringImpl>) {
       content = child;
     } else {
       children.push_back(child.render());
@@ -57,13 +59,13 @@ public:
         children(other.children) {}
 
   // Accessors that return a new copy with attribute set
-  constexpr auto with_href(const std::string &href) const {
+  constexpr auto with_href(const StringImpl &href) const {
     tag_base copy = *this;
     copy.attributes.href = href;
     return copy;
   }
 
-  constexpr auto with_src(const std::string &src) const {
+  constexpr auto with_src(const StringImpl &src) const {
     tag_base copy = *this;
     copy.attributes.src = src;
     return copy;
@@ -71,7 +73,7 @@ public:
 
   // Helper to add a child tag or string
   template <typename T> constexpr void add_child(const T &child) {
-    if constexpr (std::is_convertible_v<T, std::string>) {
+    if constexpr (std::is_convertible_v<T, StringImpl>) {
       children.push_back(child);
     } else {
       children.push_back(child.render());
@@ -80,7 +82,7 @@ public:
 
   // Render function
   constexpr std::string render() const {
-    std::string s;
+    StringImpl s;
     s += "<";
     s += TagName.value;
 
@@ -127,13 +129,13 @@ public:
 
 // Helper macro to define specific tags
 #define CREATE_TAG(Tag)                                                        \
-  template <StringLiteral ClassName = "">                                      \
+  template <StringLiteral ClassName = "", typename StringImpl = std::string>   \
   struct Tag : tag_base<#Tag, ClassName> {                                     \
     using tag_base<#Tag, ClassName>::tag_base;                                 \
   };                                                                           \
                                                                                \
-  template <StringLiteral ClassName = "">                                      \
-  Tag(const std::string &) -> Tag<ClassName>;                                  \
+  template <StringLiteral ClassName = "", typename StringImpl = std::string>   \
+  Tag(const StringImpl &) -> Tag<ClassName>;                                   \
                                                                                \
   template <StringLiteral ClassName = "", typename... T>                       \
   Tag(const T &...) -> Tag<ClassName>;                                         \
