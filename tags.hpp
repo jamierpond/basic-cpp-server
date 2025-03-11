@@ -92,9 +92,10 @@ public:
     s += "<";
     s += TagName.value;
 
-    if constexpr (sizeof(ClassNames.value) > 1) {
+    constexpr auto use_default_class = sizeof(ClassNames.value) > 1;
+    if constexpr (use_default_class) {
       s += " class='";
-      s += ClassNames.value;
+      s += ClassNames.value + StringImpl{attributes.class_};
       s += "'";
     }
 
