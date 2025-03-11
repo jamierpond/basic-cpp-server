@@ -18,6 +18,10 @@ RUN mkdir -p build && cd build && \
     cmake .. && \
     make -j$(nproc)
 
+# run tests for lolz
+RUN cd build && \
+    ctest
+
 # Expose the port the server runs on
 EXPOSE 3000
 
