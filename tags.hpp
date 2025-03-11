@@ -122,6 +122,7 @@ public:
     if (!content.empty()) {
       s += content;
     }
+
     for (const auto &child : children) {
       s += child;
     }

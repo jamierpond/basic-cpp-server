@@ -30,7 +30,8 @@ COPY . .
 
 # Build the project using Ninja
 RUN mkdir -p build && cd build && \
-    cmake -G Ninja -DCMAKE_C_COMPILER=clang-16 -DCMAKE_CXX_COMPILER=clang++-16 .. && \
+    cmake -G Ninja -DCMAKE_C_COMPILER=clang-16 -DCMAKE_CXX_COMPILER=clang++-16 \
+    -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_CXX_STANDARD=20 .. && \
     ninja
 
 # Run tests
