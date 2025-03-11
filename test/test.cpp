@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_MAIN
-#include "../tags.hpp"
+#include "../src/tags.hpp"
 #include <catch2/catch_all.hpp>
 
 #include <iostream>

@@ -26,7 +26,9 @@ ENV CXX=clang++-16
 WORKDIR /app
 
 # Copy source files
-COPY . .
+COPY CMakeLists.txt .
+COPY test test
+COPY src src
 
 # Build the project using Ninja
 RUN mkdir -p build && cd build && \
@@ -41,5 +43,11 @@ RUN cd build && \
 # Expose the port the server runs on
 EXPOSE 3000
 
+# cp the binary to the root directory
+RUN cp build/MyProject .
+
+# rm the build directory
+RUN rm -rf build
+
 # Run the server
-CMD ["./build/MyProject"]
+CMD ["./MyProject"]
