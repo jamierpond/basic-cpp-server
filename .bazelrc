@@ -1,0 +1,11 @@
+# Build options
+build --cxxopt=-std=c++23
+build --host_cxxopt=-std=c++23
+
+# Test options
+test --test_output=errors
+
+# Define sanitizer configs that can be used with --config=asan, etc.
+build:asan --copt=-fsanitize=address --linkopt=-fsanitize=address
+build:tsan --copt=-fsanitize=thread --linkopt=-fsanitize=thread
+build:msan --copt=-fsanitize=memory --linkopt=-fsanitize=memory

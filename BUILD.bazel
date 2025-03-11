@@ -1,0 +1,7 @@
+cc_library(
+    name = "all",
+    deps = [
+        "//src:server_lib",
+    ],
+    visibility = ["//visibility:public"],
+)
