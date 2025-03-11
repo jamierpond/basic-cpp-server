@@ -6,6 +6,7 @@
 #include "home.hpp"
 #include "dashboard.hpp"
 #include "emily.hpp"
+#include "shop.hpp"
 
 constexpr static auto PORT = 3000;
 
@@ -117,6 +118,9 @@ int main() {
 
         else if (path == "/emily") {
             response = create_http_response_from_html(emily());
+        }
+        else if (path == "/shop") {
+            response = create_http_response_from_html(shop());
         }
 
         else if (path == "/dash") {

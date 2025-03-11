@@ -32,7 +32,7 @@ template <
 >
 struct tag_base {
   struct Attributes {
-    StringImpl style{}, id{}, href{}, src{}, alt{}, type{}, onclick{};
+    StringImpl style{}, id{}, href{}, src{}, alt{}, type{}, onclick{}, class_;
   };
   Attributes attributes{};
   StringImpl content{};
@@ -68,6 +68,7 @@ public:
         children(other.children) {}
 
   // Accessors that return a new copy with attribute set
+  WITH_FOO(class_)
   WITH_FOO(style)
   WITH_FOO(id)
   WITH_FOO(href)
@@ -96,42 +97,24 @@ public:
       s += ClassNames.value;
       s += "'";
     }
-    // todo make these iteerable!!!!!
-    if (!attributes.style.empty()) {
-      s += " style='";
-      s += attributes.style;
-      s += "'";
-    }
-    if (!attributes.id.empty()) {
-      s += " id='";
-      s += attributes.id;
-      s += "'";
-    }
-    if (!attributes.href.empty()) {
-      s += " href='";
-      s += attributes.href;
-      s += "'";
-    }
-    if (!attributes.src.empty()) {
-      s += " src='";
-      s += attributes.src;
-      s += "'";
-    }
-    if (!attributes.alt.empty()) {
-      s += " alt='";
-      s += attributes.alt;
-      s += "'";
-    }
-    if (!attributes.type.empty()) {
-      s += " type='";
-      s += attributes.type;
-      s += "'";
-    }
-    if (!attributes.onclick.empty()) {
-      s += " onclick='";
-      s += attributes.onclick;
-      s += "'";
-    }
+
+    auto add_attr = [&s](const StringImpl &name, const StringImpl &value) {
+      if (!value.empty()) {
+        s += " ";
+        s += name;
+        s += "='";
+        s += value;
+        s += "'";
+      }
+    };
+
+    add_attr("style", attributes.style);
+    add_attr("id", attributes.id);
+    add_attr("href", attributes.href);
+    add_attr("src", attributes.src);
+    add_attr("alt", attributes.alt);
+    add_attr("type", attributes.type);
+    add_attr("onclick", attributes.onclick);
 
     s += ">";
 
