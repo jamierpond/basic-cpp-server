@@ -4,6 +4,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_set>
+#include <limits>
 
 template <auto Strings> struct CharacterSet {
   constexpr static std::string_view chars = Strings();
