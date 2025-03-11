@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-# Install dependencies including modern Clang
+# Install dependencies including modern Clang and Ninja
 RUN apt-get update && apt-get install -y \
     cmake \
     git \
@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     software-properties-common \
     gnupg \
+    ninja-build \
     && rm -rf /var/lib/apt/lists/*
 
 # Add LLVM/Clang repository and install Clang 16
@@ -27,10 +28,10 @@ WORKDIR /app
 # Copy source files
 COPY . .
 
-# Build the project
+# Build the project using Ninja
 RUN mkdir -p build && cd build && \
-    cmake -DCMAKE_C_COMPILER=clang-16 -DCMAKE_CXX_COMPILER=clang++-16 .. && \
-    make -j$(nproc)
+    cmake -G Ninja -DCMAKE_C_COMPILER=clang-16 -DCMAKE_CXX_COMPILER=clang++-16 .. && \
+    ninja
 
 # Run tests
 RUN cd build && \
