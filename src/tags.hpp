@@ -4,6 +4,7 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+#include <unordered_set>
 
 namespace pond {
 
@@ -20,21 +21,24 @@ template <size_t N> struct StringLiteral {
 // with_href, with_id, with_src
 #define WITH_FOO(Foo)                                                          \
   template <typename T> constexpr auto with_##Foo(const T &t) const {          \
-    auto copy = *this;                                                         \
-    copy.attributes.Foo = t;                                                   \
-    return copy;                                                               \
+    return with(#Foo, t);                                                      \
   }
 
 template <
   StringLiteral TagName,
   StringLiteral ClassNames = "",
-  typename StringImpl = std::string
+  typename StringImpl = std::string,
+  typename AttributeContainer = std::array<std::pair<StringImpl, StringImpl>, 8>
 >
 struct tag_base {
-  struct Attributes {
-    StringImpl style{}, id{}, href{}, src{}, alt{}, type{}, onclick{}, class_;
-  };
-  Attributes attributes{};
+//   struct Attributes {
+//     StringImpl style{}, id{}, href{}, src{}, alt{}, type{}, onclick{}, class_{}, lang{};
+//   };
+
+  int num_attributes = 0;
+  AttributeContainer attributes{};
+
+  // Attributes attributes{};
   StringImpl content{};
   std::vector<StringImpl> children{};
 
@@ -76,6 +80,13 @@ public:
   WITH_FOO(alt)
   WITH_FOO(type)
   WITH_FOO(onclick)
+  WITH_FOO(lang)
+
+  constexpr auto with(const StringImpl &key, const StringImpl &value) const {
+    auto copy = *this;
+    copy.attributes[copy.num_attributes++] = {key, value};
+    return copy;
+  }
 
   // Helper to add a child tag or string
   template <typename T> constexpr void add_child(const T &child) {
@@ -95,27 +106,19 @@ public:
     constexpr auto use_default_class = sizeof(ClassNames.value) > 1;
     if constexpr (use_default_class) {
       s += " class='";
-      s += ClassNames.value + StringImpl{attributes.class_};
+      // todo special case the class name atrribute from array
+      s += ClassNames.value; // + StringImpl{attributes.class_};
       s += "'";
     }
 
-    auto add_attr = [&s](const StringImpl &name, const StringImpl &value) {
-      if (!value.empty()) {
-        s += " ";
-        s += name;
-        s += "='";
-        s += value;
-        s += "'";
-      }
-    };
-
-    add_attr("style", attributes.style);
-    add_attr("id", attributes.id);
-    add_attr("href", attributes.href);
-    add_attr("src", attributes.src);
-    add_attr("alt", attributes.alt);
-    add_attr("type", attributes.type);
-    add_attr("onclick", attributes.onclick);
+    for (const auto &[key, value] : attributes) {
+      if (key.empty() || value.empty()) { continue; }
+      s += " ";
+      s += key;
+      s += "='";
+      s += value;
+      s += "'";
+    }
 
     s += ">";
 

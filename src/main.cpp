@@ -4,29 +4,41 @@
 #include <unistd.h>
 
 #include "home.hpp"
-#include "dashboard.hpp"
 #include "emily.hpp"
 #include "shop.hpp"
+#include "dashboard.hpp"
+#include "tailwind_gzipped.hpp"
 
 constexpr static auto PORT = 3000;
 
 constexpr auto create_http_response_from_html(const std::string& body) {
-    std::string html = "<!DOCTYPE html>"
-                       "<html lang='en'>"
-                       "<head>"
-                       "<meta charset='UTF-8'>"
-                       "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"
-                       "<script src='https://unpkg.com/@tailwindcss/browser@4'></script>"
-                       "<title>My C++ Server</title>"
-                       "</head>"
-                       "<body class='text-gray-900 p-4 min-h-screen flex items-center justify-center'><div class='max-w-4xl'>" + std::string{body} +
-                       "</div></body></html>";
+    std::string doctype = "<!DOCTYPE html>";
+
+    auto html = pond::html{
+        pond::head{
+            pond::meta{}.with("charset", "UTF-8"),
+            pond::meta{}.with("name", "viewport")
+                        .with("content", "width=device-width, initial-scale=1.0"),
+            // pond::script{"/tailwind.js"}.with("defer", ""),
+            pond::title{"Jamie Pond's C++ HTTP Server"}
+        },
+        pond::body{body}
+    }.render();
 
     return "HTTP/1.1 200 OK\r\n"
            "Content-Type: text/html\r\n"
            "Content-Length: " + std::to_string(html.size()) + "\r\n"
            "Connection: close\r\n"
            "\r\n" + html;
+}
+
+constexpr auto get_gzipped_response(const std::string& gzipped) {
+  return "HTTP/1.1 200 OK\r\n"
+          "Content-Type: text/html\r\n"
+          "Content-Encoding: gzip\r\n"
+          "Content-Length: " + std::to_string(gzipped.size()) + "\r\n"
+          "Connection: close\r\n"
+          "\r\n" + gzipped;
 }
 
 struct Endpoint {
@@ -121,6 +133,9 @@ int main() {
         }
         else if (path == "/shop") {
             response = create_http_response_from_html(shop());
+        }
+        else if (path == "/tailwind.js") {
+            response = get_gzipped_response(TAILWIND_GZIP);
         }
 
         else if (path == "/dash") {
