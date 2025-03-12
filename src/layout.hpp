@@ -36,7 +36,6 @@ constexpr auto layout(std::string title, T&&... body) {
 
       head {
         pond::title{title},
-        pond::script{}.with_src("https://unpkg.com/@tailwindcss/browser@4")
       },
 
       pond::body<"text-gray-900 p-4 min-h-screen flex items-center justify-center"> {
