@@ -32,13 +32,39 @@ constexpr auto create_http_response_from_html(const std::string& body) {
            "\r\n" + html;
 }
 
-constexpr auto get_gzipped_response(const std::string& gzipped) {
+constexpr auto get_gzipped_header(int size) {
   return "HTTP/1.1 200 OK\r\n"
           "Content-Type: text/html\r\n"
           "Content-Encoding: gzip\r\n"
-          "Content-Length: " + std::to_string(gzipped.size()) + "\r\n"
+          "Content-Length: " + std::to_string(size) + "\r\n"
           "Connection: close\r\n"
-          "\r\n" + gzipped;
+          "\r\n";
+}
+
+#include <iostream>
+#include <fstream>
+#include <memory>
+#include <stdexcept>
+
+std::pair<std::unique_ptr<uint8_t[]>, size_t> load_gzipped_file(const std::string& file_path) {
+    // Open the file in binary mode and move to the end to get the file size
+    std::ifstream file(file_path, std::ios::binary | std::ios::ate);
+    if (!file) {
+        throw std::runtime_error("Failed to open file: " + file_path);
+    }
+
+    size_t file_size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    // Allocate memory for the file data
+    auto buffer = std::make_unique<uint8_t[]>(file_size);
+
+    // Read file content into the buffer
+    if (!file.read(reinterpret_cast<char*>(buffer.get()), file_size)) {
+        throw std::runtime_error("Failed to read file: " + file_path);
+    }
+
+    return { std::move(buffer), file_size };
 }
 
 struct Endpoint {
@@ -135,7 +161,12 @@ int main() {
             response = create_http_response_from_html(shop());
         }
         else if (path == "/tailwind.js") {
-            response = get_gzipped_response(TAILWIND_GZIP);
+            auto [tailwind_gzipped, tailwind_gzipped_size] = load_gzipped_file("tailwind.js.gz");
+            auto header = get_gzipped_header(tailwind_gzipped_size);
+            send(new_socket, header.c_str(), header.size(), 0);
+            send(new_socket, tailwind_gzipped.get(), tailwind_gzipped_size, 0);
+            close(new_socket);
+            continue;
         }
 
         else if (path == "/dash") {
