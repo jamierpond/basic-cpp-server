@@ -143,6 +143,9 @@ int main() {
         return 1;
     }
 
+    auto [tailwind_gzipped, tailwind_gzipped_size] = load_gzipped_file("/home/jamie/projects/basic-cpp-server/src/js/tailwind.js.gz");
+    auto header = get_gzipped_header(tailwind_gzipped_size);
+
     std::cout << "Server listening on port " << PORT << "...\n";
 
     while (true) {
@@ -176,8 +179,6 @@ int main() {
         }
         else if (path == "/tailwind") {
             std::cout << "Serving tailwind.js\n";
-            auto [tailwind_gzipped, tailwind_gzipped_size] = load_gzipped_file("/home/jamie/projects/basic-cpp-server/src/js/tailwind.js.gz");
-            auto header = get_gzipped_header(tailwind_gzipped_size);
             send(new_socket, header.c_str(), header.size(), 0);
             send(new_socket, tailwind_gzipped.get(), tailwind_gzipped_size, 0);
             close(new_socket);
