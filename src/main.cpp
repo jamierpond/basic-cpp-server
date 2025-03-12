@@ -10,7 +10,6 @@
 #include "emily.hpp"
 #include "shop.hpp"
 #include "dashboard.hpp"
-#include "tailwind_gzipped.hpp"
 
 constexpr static auto PORT = 3000;
 
