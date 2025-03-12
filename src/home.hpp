@@ -11,18 +11,6 @@ struct CounterState {
 
 using Encoding = StringEncoder<char_sets::Base62Encoding, uint64_t, true, true>;
 
-constexpr auto scroll_position_script = R"(
-document.addEventListener("DOMContentLoaded", function(event) {
-    var scrollpos = localStorage.getItem('scrollpos');
-    if (scrollpos) window.scrollTo(0, scrollpos);
-});
-
-window.onbeforeunload = function(e) {
-    localStorage.setItem('scrollpos', window.scrollY);
-};
-)";
-
-
 constexpr auto home(const std::string_view& path) {
     // trim the leading slash
     auto count_str = path.substr(1);
@@ -42,7 +30,6 @@ constexpr auto home(const std::string_view& path) {
     using namespace pond;
     return layout(
             "Jamie Pond",
-            script {scroll_position_script},
             p {
                "I'm Lead Audio Software Engineer at ",
                a{"mayk"}.with_href(links::MAYK)
@@ -55,19 +42,6 @@ constexpr auto home(const std::string_view& path) {
             p {
               "I spoke at ADC 2021 about ", a{span<"font-bold text-blue-500">{"using compiler intrinsics in your code"}}
               .with_href(links::ADC_2021)
-            },
-            a <"bg-blue-500 text-white p-2 rounded-md">{
-              "Increment the counter!"
-            }.with_href("/" + encode({.count = count + 1})),
-            a <"bg-blue-500 text-white p-2 rounded-md">{
-              "Decrement the counter!"
-            }.with_href("/" + encode({.count = count - 1})),
-            a <"bg-blue-500 text-white p-2 rounded-md">{
-              "Reset the counter!"
-            }.with_href("/" + encode({.count = 0})),
-            p {
-              "You have clicked the button ", span<"font-bold">{std::to_string(count)},
-              " times."
             },
             a <"text-blue-500"> {
               "Click here to go to emily's page"
