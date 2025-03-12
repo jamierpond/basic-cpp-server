@@ -10,7 +10,6 @@
 #include "emily.hpp"
 #include "shop.hpp"
 #include "dashboard.hpp"
-#include "tailwind_gzipped.hpp"
 
 constexpr static auto PORT = 3000;
 
@@ -22,7 +21,7 @@ constexpr auto create_http_response_from_html(const std::string& body) {
             pond::meta{}.with("charset", "UTF-8"),
             pond::meta{}.with("name", "viewport")
                         .with("content", "width=device-width, initial-scale=1.0"),
-            // pond::script{"/tailwind.js"}.with("defer", ""),
+            pond::script{}.with_src("/tailwind"),
             pond::title{"Jamie Pond's C++ HTTP Server"}
         },
         pond::body{body}
@@ -175,8 +174,9 @@ int main() {
         else if (path == "/shop") {
             response = create_http_response_from_html(shop());
         }
-        else if (path == "/tailwind.js") {
-            auto [tailwind_gzipped, tailwind_gzipped_size] = load_gzipped_file("tailwind.js.gz");
+        else if (path == "/tailwind") {
+            std::cout << "Serving tailwind.js\n";
+            auto [tailwind_gzipped, tailwind_gzipped_size] = load_gzipped_file("/home/jamie/projects/basic-cpp-server/src/js/tailwind.js.gz");
             auto header = get_gzipped_header(tailwind_gzipped_size);
             send(new_socket, header.c_str(), header.size(), 0);
             send(new_socket, tailwind_gzipped.get(), tailwind_gzipped_size, 0);
