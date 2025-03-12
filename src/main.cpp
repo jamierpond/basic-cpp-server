@@ -2,25 +2,31 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+// oss stream
+#include <sstream>
+#include <string>
 
 #include "home.hpp"
-#include "dashboard.hpp"
 #include "emily.hpp"
 #include "shop.hpp"
+#include "dashboard.hpp"
+#include "tailwind_gzipped.hpp"
 
 constexpr static auto PORT = 3000;
 
 constexpr auto create_http_response_from_html(const std::string& body) {
-    std::string html = "<!DOCTYPE html>"
-                       "<html lang='en'>"
-                       "<head>"
-                       "<meta charset='UTF-8'>"
-                       "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"
-                       "<script src='https://unpkg.com/@tailwindcss/browser@4'></script>"
-                       "<title>My C++ Server</title>"
-                       "</head>"
-                       "<body class='text-gray-900 p-4 min-h-screen flex items-center justify-center'><div class='max-w-4xl'>" + std::string{body} +
-                       "</div></body></html>";
+    std::string doctype = "<!DOCTYPE html>";
+
+    auto html = pond::html{
+        pond::head{
+            pond::meta{}.with("charset", "UTF-8"),
+            pond::meta{}.with("name", "viewport")
+                        .with("content", "width=device-width, initial-scale=1.0"),
+            // pond::script{"/tailwind.js"}.with("defer", ""),
+            pond::title{"Jamie Pond's C++ HTTP Server"}
+        },
+        pond::body{body}
+    }.render();
 
     return "HTTP/1.1 200 OK\r\n"
            "Content-Type: text/html\r\n"
@@ -29,6 +35,53 @@ constexpr auto create_http_response_from_html(const std::string& body) {
            "\r\n" + html;
 }
 
+constexpr auto get_gzipped_header(int size) {
+  return "HTTP/1.1 200 OK\r\n"
+          "Content-Type: text/html\r\n"
+          "Content-Encoding: gzip\r\n"
+          "Content-Length: " + std::to_string(size) + "\r\n"
+          "Connection: close\r\n"
+          "\r\n";
+}
+
+#include <iostream>
+#include <fstream>
+#include <memory>
+#include <stdexcept>
+
+std::pair<std::unique_ptr<uint8_t[]>, size_t> load_gzipped_file(const std::string& file_path) {
+    // Open the file in binary mode and move to the end to get the file size
+    std::ifstream file(file_path, std::ios::binary | std::ios::ate);
+    if (!file) {
+        throw std::runtime_error("Failed to open file: " + file_path);
+    }
+
+    size_t file_size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    // Allocate memory for the file data
+    auto buffer = std::make_unique<uint8_t[]>(file_size);
+
+    // Read file content into the buffer
+    if (!file.read(reinterpret_cast<char*>(buffer.get()), file_size)) {
+        throw std::runtime_error("Failed to read file: " + file_path);
+    }
+
+    return { std::move(buffer), file_size };
+}
+
+std::string get_gzipped_response(const std::string& gzipped) {
+    std::ostringstream response;
+    response << "HTTP/1.1 200 OK\r\n"
+             << "Content-Type: text/plain\r\n"
+             << "Content-Encoding: gzip\r\n"
+             << "Content-Length: " << gzipped.size() << "\r\n"
+             << "Vary: Accept-Encoding\r\n"
+             << "Connection: close\r\n"
+             << "\r\n"
+             << gzipped;
+    return response.str();
+}
 struct Endpoint {
   std::string path;
   std::string repsonshe;
@@ -121,6 +174,14 @@ int main() {
         }
         else if (path == "/shop") {
             response = create_http_response_from_html(shop());
+        }
+        else if (path == "/tailwind.js") {
+            auto [tailwind_gzipped, tailwind_gzipped_size] = load_gzipped_file("tailwind.js.gz");
+            auto header = get_gzipped_header(tailwind_gzipped_size);
+            send(new_socket, header.c_str(), header.size(), 0);
+            send(new_socket, tailwind_gzipped.get(), tailwind_gzipped_size, 0);
+            close(new_socket);
+            continue;
         }
 
         else if (path == "/dash") {
