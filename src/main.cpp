@@ -1,8 +1,11 @@
 #include <iostream>
+#include <fstream>
+#include <memory>
+#include <stdexcept>
+#include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-// oss stream
 #include <sstream>
 #include <string>
 
@@ -10,6 +13,7 @@
 #include "emily.hpp"
 #include "shop.hpp"
 #include "dashboard.hpp"
+#include "js/tailwind_gz.hpp"
 
 constexpr static auto PORT = 3000;
 
@@ -21,7 +25,7 @@ constexpr auto create_http_response_from_html(const std::string& body) {
             pond::meta{}.with("charset", "UTF-8"),
             pond::meta{}.with("name", "viewport")
                         .with("content", "width=device-width, initial-scale=1.0"),
-            // pond::script{"/tailwind.js"}.with("defer", ""),
+            pond::script{}.with_src("/tailwind"),
             pond::title{"Jamie Pond's C++ HTTP Server"}
         },
         pond::body{body}
@@ -43,10 +47,6 @@ constexpr auto get_gzipped_header(int size) {
           "\r\n";
 }
 
-#include <iostream>
-#include <fstream>
-#include <memory>
-#include <stdexcept>
 
 std::pair<std::unique_ptr<uint8_t[]>, size_t> load_gzipped_file(const std::string& file_path) {
     // Open the file in binary mode and move to the end to get the file size
@@ -143,6 +143,8 @@ int main() {
         return 1;
     }
 
+    auto header = get_gzipped_header(TAILWIND_GZ_DATA.size());
+
     std::cout << "Server listening on port " << PORT << "...\n";
 
     while (true) {
@@ -174,11 +176,10 @@ int main() {
         else if (path == "/shop") {
             response = create_http_response_from_html(shop());
         }
-        else if (path == "/tailwind.js") {
-            auto [tailwind_gzipped, tailwind_gzipped_size] = load_gzipped_file("tailwind.js.gz");
-            auto header = get_gzipped_header(tailwind_gzipped_size);
+        else if (path == "/tailwind") {
+            std::cout << "Serving tailwind.js\n";
             send(new_socket, header.c_str(), header.size(), 0);
-            send(new_socket, tailwind_gzipped.get(), tailwind_gzipped_size, 0);
+            send(new_socket, TAILWIND_GZ_DATA.data(), TAILWIND_GZ_DATA.size(), 0);
             close(new_socket);
             continue;
         }
