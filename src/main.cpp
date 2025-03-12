@@ -2,6 +2,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+// oss stream
+#include <sstream>
+#include <string>
 
 #include "home.hpp"
 #include "emily.hpp"
@@ -32,15 +35,20 @@ constexpr auto create_http_response_from_html(const std::string& body) {
            "\r\n" + html;
 }
 
-constexpr auto get_gzipped_response(const std::string& gzipped) {
-  return "HTTP/1.1 200 OK\r\n"
-          "Content-Type: text/html\r\n"
-          "Content-Encoding: gzip\r\n"
-          "Content-Length: " + std::to_string(gzipped.size()) + "\r\n"
-          "Connection: close\r\n"
-          "\r\n" + gzipped;
-}
+#include <string>
 
+std::string get_gzipped_response(const std::string& gzipped) {
+    std::ostringstream response;
+    response << "HTTP/1.1 200 OK\r\n"
+             << "Content-Type: text/plain\r\n"
+             << "Content-Encoding: gzip\r\n"
+             << "Content-Length: " << gzipped.size() << "\r\n"
+             << "Vary: Accept-Encoding\r\n"
+             << "Connection: close\r\n"
+             << "\r\n"
+             << gzipped;
+    return response.str();
+}
 struct Endpoint {
   std::string path;
   std::string repsonshe;
@@ -134,7 +142,8 @@ int main() {
         else if (path == "/shop") {
             response = create_http_response_from_html(shop());
         }
-        else if (path == "/tailwind.js") {
+        else if (path == "/tailwind") {
+            std::cout << "Serving tailwind.js\n";
             response = get_gzipped_response(TAILWIND_GZIP);
         }
 
