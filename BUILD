@@ -13,3 +13,18 @@ cc_binary(
     copts = ["-std=c++23"],
 )
 
+cc_library(
+  name = "test_lib",
+  hdrs = glob(["test/*.hpp"]),
+  srcs = glob(["test/*.cpp"]),
+  includes = ["test"],
+  deps = [":src_lib", "@catch2//:catch2"],
+  visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "test",
+    srcs = ["test/test.cpp"],
+    copts = ["-std=c++23"],
+    deps = [":test_lib"],
+)

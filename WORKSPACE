@@ -2,6 +2,13 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 
+# Add Catch2 for unit testing
+http_archive(
+    name = "catch2",
+    strip_prefix = "Catch2-3.5.1",
+    urls = ["https://github.com/catchorg/Catch2/archive/v3.5.1.tar.gz"],
+)
+
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor
 http_archive(
@@ -21,3 +28,4 @@ load("@hedron_compile_commands//:workspace_setup_transitive_transitive.bzl", "he
 hedron_compile_commands_setup_transitive_transitive()
 load("@hedron_compile_commands//:workspace_setup_transitive_transitive_transitive.bzl", "hedron_compile_commands_setup_transitive_transitive_transitive")
 hedron_compile_commands_setup_transitive_transitive_transitive()
+
