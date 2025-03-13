@@ -10,8 +10,10 @@
 #include "emily.hpp"
 #include "shop.hpp"
 #include "dashboard.hpp"
+#include "js/tailwind_gz.hpp"
 
-constexpr static auto PORT = 3000;
+// tood dothis dwill kill me
+constexpr static auto PORT = 3001;
 
 constexpr auto create_http_response_from_html(const std::string& body) {
     std::string doctype = "<!DOCTYPE html>";
@@ -143,8 +145,8 @@ int main() {
         return 1;
     }
 
-    auto [tailwind_gzipped, tailwind_gzipped_size] = load_gzipped_file("/home/jamie/projects/basic-cpp-server/src/js/tailwind.js.gz");
-    auto header = get_gzipped_header(tailwind_gzipped_size);
+    // auto [tailwind_gzipped, tailwind_gzipped_size] = load_gzipped_file("/home/jamie/projects/basic-cpp-server/src/js/tailwind.js.gz");
+    auto header = get_gzipped_header(TAILWIND_GZ_DATA.size());
 
     std::cout << "Server listening on port " << PORT << "...\n";
 
@@ -180,7 +182,7 @@ int main() {
         else if (path == "/tailwind") {
             std::cout << "Serving tailwind.js\n";
             send(new_socket, header.c_str(), header.size(), 0);
-            send(new_socket, tailwind_gzipped.get(), tailwind_gzipped_size, 0);
+            send(new_socket, TAILWIND_GZ_DATA.data(), TAILWIND_GZ_DATA.size(), 0);
             close(new_socket);
             continue;
         }
