@@ -1,8 +1,11 @@
 #include <iostream>
+#include <fstream>
+#include <memory>
+#include <stdexcept>
+#include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-// oss stream
 #include <sstream>
 #include <string>
 
@@ -12,7 +15,6 @@
 #include "dashboard.hpp"
 #include "js/tailwind_gz.hpp"
 
-// tood dothis dwill kill me
 constexpr static auto PORT = 3000;
 
 constexpr auto create_http_response_from_html(const std::string& body) {
@@ -45,10 +47,6 @@ constexpr auto get_gzipped_header(int size) {
           "\r\n";
 }
 
-#include <iostream>
-#include <fstream>
-#include <memory>
-#include <stdexcept>
 
 std::pair<std::unique_ptr<uint8_t[]>, size_t> load_gzipped_file(const std::string& file_path) {
     // Open the file in binary mode and move to the end to get the file size
@@ -145,7 +143,6 @@ int main() {
         return 1;
     }
 
-    // auto [tailwind_gzipped, tailwind_gzipped_size] = load_gzipped_file("/home/jamie/projects/basic-cpp-server/src/js/tailwind.js.gz");
     auto header = get_gzipped_header(TAILWIND_GZ_DATA.size());
 
     std::cout << "Server listening on port " << PORT << "...\n";
