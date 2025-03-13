@@ -30,7 +30,8 @@ endif()
 
 # Main executable
 add_executable(${PROJECT_NAME} src/main.cpp)
-# run python ./src/js/compile_tailwind.py
+
+# compile the tailwind js file to binary data
 execute_process(COMMAND python3
   ${CMAKE_SOURCE_DIR}/src/js/compile_tailwind.py ${CMAKE_SOURCE_DIR}/src/js/tailwind.js ${CMAKE_SOURCE_DIR}/src/js/tailwind_gz.hpp
 )
