@@ -1,0 +1,7 @@
+# Use Clang as the compiler
+build --action_env=CC=clang
+build --action_env=CXX=clang++
+
+# Set C++ standard to C++23
+build --cxxopt=-std=c++23
+
