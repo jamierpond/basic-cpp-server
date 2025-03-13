@@ -13,7 +13,7 @@
 #include "js/tailwind_gz.hpp"
 
 // tood dothis dwill kill me
-constexpr static auto PORT = 3001;
+constexpr static auto PORT = 3000;
 
 constexpr auto create_http_response_from_html(const std::string& body) {
     std::string doctype = "<!DOCTYPE html>";
