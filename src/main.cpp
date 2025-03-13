@@ -143,7 +143,7 @@ int main() {
         return 1;
     }
 
-    auto [tailwind_gzipped, tailwind_gzipped_size] = load_gzipped_file("/home/jamie/projects/basic-cpp-server/src/js/tailwind.js.gz");
+    auto [tailwind_gzipped, tailwind_gzipped_size] = load_gzipped_file("/Users/jamiepond/projects/basic-cpp-server/src/js/tailwind.js.gz");
     auto header = get_gzipped_header(tailwind_gzipped_size);
 
     std::cout << "Server listening on port " << PORT << "...\n";
