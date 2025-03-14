@@ -19,6 +19,9 @@
 
 constexpr static auto PORT = 3000;
 
+constexpr auto generate_sitemap_xml() {
+}
+
 constexpr auto create_http_response_from_html(const std::string& body) {
     std::string doctype = "<!DOCTYPE html>";
 
@@ -159,6 +162,11 @@ int main() {
         {"/dash", [&] { send_page(dashboard::dashboard()); }},
         {"/tailwind", send_tailwind}
     };
+
+    auto generate_sitemap = [](auto content) {
+      auto sitemap = pond::url{};
+
+    }
 
 
     std::cout << "Server listening on port " << PORT << "...\n";

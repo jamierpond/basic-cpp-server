@@ -199,4 +199,13 @@ CREATE_TAG(input)
 CREATE_TAG(button)
 CREATE_TAG(form)
 
+// for general xml tags
+CREATE_TAG(url)
+CREATE_TAG(loc)
+CREATE_TAG(lastmod)
+CREATE_TAG(changefreq)
+CREATE_TAG(priority)
+
+} // namespace pond
+
 } // namespace html
