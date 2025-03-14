@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <sstream>
 #include <string>
+#include <unordered_map>
+#include <functional>
 
 #include "home.hpp"
 #include "emily.hpp"
@@ -38,13 +40,16 @@ constexpr auto create_http_response_from_html(const std::string& body) {
            "\r\n" + html;
 }
 
-constexpr auto get_gzipped_header(int size) {
+constexpr auto get_gzipped_header(int size, const std::string& content_type = "text/javascript") {
+  //do cache-control: no-transform
   return "HTTP/1.1 200 OK\r\n"
-          "Content-Type: text/html\r\n"
-          "Content-Encoding: gzip\r\n"
-          "Content-Length: " + std::to_string(size) + "\r\n"
-          "Connection: close\r\n"
-          "\r\n";
+         "Content-Type: " + content_type + "\r\n"
+         "Content-Encoding: gzip\r\n"
+         "Content-Length: " + std::to_string(size) + "\r\n"
+         "Connection: close\r\n"
+         "Cache-Control: no-transform\r\n"
+         "encodeBody: manual\r\n"
+         "\r\n";
 }
 
 
@@ -69,18 +74,6 @@ std::pair<std::unique_ptr<uint8_t[]>, size_t> load_gzipped_file(const std::strin
     return { std::move(buffer), file_size };
 }
 
-std::string get_gzipped_response(const std::string& gzipped) {
-    std::ostringstream response;
-    response << "HTTP/1.1 200 OK\r\n"
-             << "Content-Type: text/plain\r\n"
-             << "Content-Encoding: gzip\r\n"
-             << "Content-Length: " << gzipped.size() << "\r\n"
-             << "Vary: Accept-Encoding\r\n"
-             << "Connection: close\r\n"
-             << "\r\n"
-             << gzipped;
-    return response.str();
-}
 struct Endpoint {
   std::string path;
   std::string repsonshe;
@@ -117,7 +110,7 @@ static_assert(get_request_path("GET /index/lemon HTTP/1.1") == "/index/lemon");
 
 int main() {
     int server_fd, new_socket;
-    struct sockaddr_in address;
+    sockaddr_in address{};
     socklen_t addrlen = sizeof(address);
     char buffer[1024] = {0};
 
@@ -143,7 +136,30 @@ int main() {
         return 1;
     }
 
+    auto send_page = [&new_socket] (const auto& content) {
+      auto c = create_http_response_from_html(content);
+      send(new_socket, c.c_str(), c.size(), 0);
+      close(new_socket);
+    };
+
     auto header = get_gzipped_header(TAILWIND_GZ_DATA.size());
+    auto* tw_data = TAILWIND_GZ_DATA.data();
+    auto tw_size = TAILWIND_GZ_DATA.size();
+    auto send_tailwind = [&] {
+          std::cout << "Serving tailwind.js\n";
+          send(new_socket, header.c_str(), header.size(), 0);
+          send(new_socket, tw_data, tw_size, 0);
+          close(new_socket);
+    };
+
+    const auto content_lookup = std::unordered_map<std::string, std::function<void()>> {
+        {"/", [&] { send_page(home("/")); }},
+        {"/emily", [&] { send_page(emily()); }},
+        {"/shop", [&] { send_page(shop()); }},
+        {"/dash", [&] { send_page(dashboard::dashboard()); }},
+        {"/tailwind", send_tailwind}
+    };
+
 
     std::cout << "Server listening on port " << PORT << "...\n";
 
@@ -155,40 +171,22 @@ int main() {
         }
 
         read(new_socket, buffer, sizeof(buffer));
-        std::string request(buffer);
-        // std::cout << "Received request:\n" << request << "\n";
 
-        std::string path = get_request_path(request);
-        std::string response;
-
-        // get session id from cookie
-
+        auto request = std::string{buffer};
+        auto path = get_request_path(request);
+        auto response = std::string{};
         auto session_id = get_session_id(request);
-        std::cout << "Session ID: " << session_id << "\n";
 
-        if (path == "/") {
-            response = create_http_response_from_html(home(path));
-        }
-
-        else if (path == "/emily") {
-            response = create_http_response_from_html(emily());
-        }
-        else if (path == "/shop") {
-            response = create_http_response_from_html(shop());
-        }
-        else if (path == "/tailwind") {
-            std::cout << "Serving tailwind.js\n";
-            send(new_socket, header.c_str(), header.size(), 0);
-            send(new_socket, TAILWIND_GZ_DATA.data(), TAILWIND_GZ_DATA.size(), 0);
-            close(new_socket);
-            continue;
-        }
-
-        else if (path == "/dash") {
-            response = create_http_response_from_html(dashboard::dashboard());
-        }
-        else {
-            response = create_http_response_from_html(home(path));
+        try {
+            content_lookup.at(path)();
+        } catch (const std::out_of_range& e) {
+            std::cerr << "404 Not Found: " << path << '\n';
+            std::string body = "404 Not Found";
+            response = create_http_response_from_html(body);
+        } catch (const std::exception& e) {
+            std::cerr << "500 Internal Server Error: " << e.what() << '\n';
+            std::string body = "500 Internal Server Error";
+            response = create_http_response_from_html(body);
         }
 
         send(new_socket, response.c_str(), response.size(), 0);
