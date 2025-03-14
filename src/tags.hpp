@@ -18,6 +18,13 @@ template <size_t N> struct StringLiteral {
   }
 };
 
+
+// in theory we could have this templated as long as it matches the tag_base
+template <typename StringImpl = std::string>
+struct ToString {
+  virtual StringImpl render() const = 0;
+};
+
 // with_href, with_id, with_src
 #define WITH_FOO(Foo)                                                          \
   template <typename T> constexpr auto with_##Foo(const T &t) const {          \
@@ -30,10 +37,7 @@ template <
   typename StringImpl = std::string,
   typename AttributeContainer = std::array<std::pair<StringImpl, StringImpl>, 8>
 >
-struct tag_base {
-//   struct Attributes {
-//     StringImpl style{}, id{}, href{}, src{}, alt{}, type{}, onclick{}, class_{}, lang{};
-//   };
+struct tag_base : public ToString<StringImpl> {
 
   int num_attributes = 0;
   AttributeContainer attributes{};
@@ -98,7 +102,7 @@ public:
   }
 
   // Render function
-  constexpr StringImpl render() const {
+  constexpr StringImpl render() const override {
     StringImpl s;
     s += "<";
     s += TagName.value;
@@ -200,12 +204,13 @@ CREATE_TAG(button)
 CREATE_TAG(form)
 
 // for general xml tags
-CREATE_TAG(url)
+CREATE_TAG(urlset)
 CREATE_TAG(loc)
 CREATE_TAG(lastmod)
 CREATE_TAG(changefreq)
 CREATE_TAG(priority)
 
-} // namespace pond
+CREATE_TAG(url)
+
 
 } // namespace html

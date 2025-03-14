@@ -2,31 +2,8 @@
 #include "tags.hpp"
 #include "layout.hpp"
 #include "encoding.hpp"
-#include <cstdint>
-#include <iostream>
-
-struct CounterState {
-    uint64_t count = 0;
-};
-
-using Encoding = StringEncoder<char_sets::Base62Encoding, uint64_t, true, true>;
 
 constexpr auto home(const std::string_view& path) {
-    // trim the leading slash
-    auto count_str = path.substr(1);
-
-    auto count = uint64_t{0};
-    try {
-      count = Encoding::decode(count_str);
-    } catch (const std::runtime_error &e) {
-      std::cerr << "Invalid count: " << count_str << "\n";
-      count = 0;
-    }
-
-    auto encode = [] (const CounterState &state) {
-        return Encoding::encode(state.count);
-    };
-
     using namespace pond;
     return layout(
             "Jamie Pond",

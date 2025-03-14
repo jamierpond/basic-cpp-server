@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <sstream>
+#include "tags.hpp"
 #include <string>
 #include <unordered_map>
 #include <functional>
@@ -163,10 +163,19 @@ int main() {
         {"/tailwind", send_tailwind}
     };
 
-    auto generate_sitemap = [](auto content) {
-      auto sitemap = pond::url{};
+    auto generate_sitemap = [](std::unordered_map<std::string, std::function<void()>>& content_lookup) {
+      auto now_string = __DATE__;
+      auto now = std::string{now_string};
 
-    }
+      std::vector<pond::ToString<std::string>*> urls;
+      for (const auto& [path, _] : content_lookup) {
+        urls.push_back(new pond::url{path, now, "daily", "1.0"});
+      }
+
+      auto sitemap = pond::urlset{
+      }.render();
+
+    };
 
 
     std::cout << "Server listening on port " << PORT << "...\n";
