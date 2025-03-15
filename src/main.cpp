@@ -1,12 +1,9 @@
 #include <iostream>
-#include <fstream>
-#include <memory>
 #include <stdexcept>
 #include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <functional>
@@ -41,41 +38,13 @@ constexpr auto create_http_response_from_html(const std::string& body) {
 }
 
 constexpr auto get_gzipped_header(int size, const std::string& content_type = "text/javascript") {
-  //do cache-control: no-transform
+  // do cache-control: no-transform
   return "HTTP/1.1 200 OK\r\n"
          "Content-Type: " + content_type + "\r\n"
-         "Content-Encoding: gzip\r\n"
          "Content-Length: " + std::to_string(size) + "\r\n"
          "Connection: close\r\n"
          "\r\n";
 }
-
-
-std::pair<std::unique_ptr<uint8_t[]>, size_t> load_gzipped_file(const std::string& file_path) {
-    // Open the file in binary mode and move to the end to get the file size
-    std::ifstream file(file_path, std::ios::binary | std::ios::ate);
-    if (!file) {
-        throw std::runtime_error("Failed to open file: " + file_path);
-    }
-
-    size_t file_size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    // Allocate memory for the file data
-    auto buffer = std::make_unique<uint8_t[]>(file_size);
-
-    // Read file content into the buffer
-    if (!file.read(reinterpret_cast<char*>(buffer.get()), file_size)) {
-        throw std::runtime_error("Failed to read file: " + file_path);
-    }
-
-    return { std::move(buffer), file_size };
-}
-
-struct Endpoint {
-  std::string path;
-  std::string repsonshe;
-};
 
 // Extract the requested path from the HTTP request
 constexpr std::string get_request_path(const std::string& request) {
@@ -140,9 +109,9 @@ int main() {
       close(new_socket);
     };
 
-    auto header = get_gzipped_header(TAILWIND_GZ_DATA.size());
-    auto* tw_data = TAILWIND_GZ_DATA.data();
-    auto tw_size = TAILWIND_GZ_DATA.size();
+    auto header = get_gzipped_header(TAILWIND_DATA.size());
+    auto* tw_data = TAILWIND_DATA.data();
+    auto tw_size = TAILWIND_DATA.size();
     auto send_tailwind = [&] {
           std::cout << "Serving tailwind.js\n";
           send(new_socket, header.c_str(), header.size(), 0);
