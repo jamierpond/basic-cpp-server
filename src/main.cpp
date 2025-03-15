@@ -19,8 +19,14 @@
 
 constexpr static auto PORT = 3000;
 
-constexpr auto generate_sitemap_xml() {
-}
+
+constexpr auto http_header = [](auto size, const std::string& content_type = "text/html", const std::string& extra_headers = "") {
+    return "HTTP/1.1 200 OK\r\n"
+           "Content-Type: " + content_type + "\r\n"
+           "Content-Length: " + size + "\r\n"
+           "Connection: close\r\n"
+           + extra_headers + "\r\n";
+};
 
 constexpr auto create_http_response_from_html(const std::string& body) {
     std::string doctype = "<!DOCTYPE html>";
@@ -36,23 +42,12 @@ constexpr auto create_http_response_from_html(const std::string& body) {
         pond::body{body}
     }.render();
 
-    return "HTTP/1.1 200 OK\r\n"
-           "Content-Type: text/html\r\n"
-           "Content-Length: " + std::to_string(html.size()) + "\r\n"
-           "Connection: close\r\n"
-           "\r\n" + html;
+    return http_header(doctype + html);
 }
 
 constexpr auto get_gzipped_header(int size, const std::string& content_type = "text/javascript") {
   //do cache-control: no-transform
-  return "HTTP/1.1 200 OK\r\n"
-         "Content-Type: " + content_type + "\r\n"
-         "Content-Encoding: gzip\r\n"
-         "Content-Length: " + std::to_string(size) + "\r\n"
-         "Connection: close\r\n"
-         "Cache-Control: no-transform\r\n"
-         "encodeBody: manual\r\n"
-         "\r\n";
+  return http_header("", content_type, "Content-Encoding: gzip\r\nContent-Length: " + std::to_string(size));
 }
 
 
@@ -78,8 +73,7 @@ std::pair<std::unique_ptr<uint8_t[]>, size_t> load_gzipped_file(const std::strin
 }
 
 struct Endpoint {
-  std::string path;
-  std::string repsonshe;
+  std::string_view path, content;
 };
 
 // Extract the requested path from the HTTP request
@@ -139,8 +133,8 @@ int main() {
         return 1;
     }
 
-    auto send_page = [&new_socket] (const auto& content) {
-      auto c = create_http_response_from_html(content);
+    auto send_page = [&new_socket] (const auto& content, const auto& mime_type = "text/html") {
+      auto c = create_http_response_from_html(content, mime_type);
       send(new_socket, c.c_str(), c.size(), 0);
       close(new_socket);
     };
@@ -155,28 +149,35 @@ int main() {
           close(new_socket);
     };
 
-    const auto content_lookup = std::unordered_map<std::string, std::function<void()>> {
-        {"/", [&] { send_page(home("/")); }},
-        {"/emily", [&] { send_page(emily()); }},
-        {"/shop", [&] { send_page(shop()); }},
-        {"/dash", [&] { send_page(dashboard::dashboard()); }},
-        {"/tailwind", send_tailwind}
-    };
-
-    auto generate_sitemap = [](std::unordered_map<std::string, std::function<void()>>& content_lookup) {
+    auto generate_sitemap = [](auto& content_lookup) {
       auto now_string = __DATE__;
       auto now = std::string{now_string};
 
-      std::vector<pond::ToString<std::string>*> urls;
+      // flex for external polymorphism
+      std::vector<pond::ToString<std::string>*> urls{};
       for (const auto& [path, _] : content_lookup) {
         urls.push_back(new pond::url{path, now, "daily", "1.0"});
       }
 
-      auto sitemap = pond::urlset{
+      auto str_urls = std::string{};
+      for (const auto& url : urls) {
+        // could have just done this in one step,
+        // but wanted to show the flexibility
+        str_urls += url->render();
+      }
+      return pond::urlset{
+        str_urls
       }.render();
-
     };
 
+
+    const auto content_lookup = std::unordered_map<std::string, std::function<void()>> {
+        {"/", [&] { send_page(home("/"), "text/html"); }},
+        {"/emily", [&] { send_page(emily(), "text/html"); }},
+        {"/shop", [&] { send_page(shop(), "text/html"); }},
+        {"/dash", [&] { send_page(dashboard::dashboard(), "text/html"); }},
+        {"/tailwind", send_tailwind},
+    };
 
     std::cout << "Server listening on port " << PORT << "...\n";
 
@@ -193,6 +194,14 @@ int main() {
         auto path = get_request_path(request);
         auto response = std::string{};
         auto session_id = get_session_id(request);
+
+        if (path == "/sitemap.xml") {
+          auto sm = generate_sitemap(content_lookup);
+          auto c = create_http_response_from_html(sm, "application/xml");
+          send(new_socket, response.c_str(), response.size(), 0);
+          close(new_socket);
+          continue;
+        }
 
         try {
             content_lookup.at(path)();

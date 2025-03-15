@@ -18,10 +18,9 @@ template <size_t N> struct StringLiteral {
   }
 };
 
-
-// in theory we could have this templated as long as it matches the tag_base
 template <typename StringImpl = std::string>
 struct ToString {
+  // todo rename to to_string
   virtual StringImpl render() const = 0;
 };
 
