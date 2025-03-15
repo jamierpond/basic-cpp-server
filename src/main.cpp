@@ -47,8 +47,6 @@ constexpr auto get_gzipped_header(int size, const std::string& content_type = "t
          "Content-Encoding: gzip\r\n"
          "Content-Length: " + std::to_string(size) + "\r\n"
          "Connection: close\r\n"
-         "Cache-Control: no-transform\r\n"
-         "encodeBody: manual\r\n"
          "\r\n";
 }
 
