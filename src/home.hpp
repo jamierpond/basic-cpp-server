@@ -3,7 +3,7 @@
 #include "layout.hpp"
 #include "encoding.hpp"
 #include <cstdint>
-#include <iostream>
+#include "linkedin_logo.hpp"
 
 struct CounterState {
     uint64_t count = 0;
@@ -12,21 +12,6 @@ struct CounterState {
 using Encoding = StringEncoder<char_sets::Base62Encoding, uint64_t, true, true>;
 
 constexpr auto home(const std::string_view& path) {
-    // trim the leading slash
-    auto count_str = path.substr(1);
-
-    auto count = uint64_t{0};
-    try {
-      count = Encoding::decode(count_str);
-    } catch (const std::runtime_error &e) {
-      std::cerr << "Invalid count: " << count_str << "\n";
-      count = 0;
-    }
-
-    auto encode = [] (const CounterState &state) {
-        return Encoding::encode(state.count);
-    };
-
     using namespace pond;
     return layout(
             "Jamie Pond",
@@ -56,7 +41,7 @@ constexpr auto home(const std::string_view& path) {
               .with_href(links::EMAIL)
             },
             pond::div<"flex flex-row space-x-4">{
-                a{img<"w-8 h-8">{}.with_src(links::LINKEDIN_IMG)}.with_href(links::LINKEDIN),
+                a{svg<"w-8 h-8">{LINKEDIN_LOGO}}.with_href(links::LINKEDIN),
                 a{img<"w-8 h-8">{}.with_src(links::TWITTER_IMG)}.with_href(links::TWITTER)
             }
     ).render();

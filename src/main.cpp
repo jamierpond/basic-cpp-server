@@ -24,7 +24,7 @@ constexpr auto create_http_response_from_html(const std::string& body) {
             pond::meta{}.with("charset", "UTF-8"),
             pond::meta{}.with("name", "viewport")
                         .with("content", "width=device-width, initial-scale=1.0"),
-            pond::script{}.with_src("/tailwind"),
+            pond::script{}.with_src("/tailwind").with("defer", ""),
             pond::title{"Jamie Pond's C++ HTTP Server"}
         },
         pond::body{body}
@@ -42,6 +42,7 @@ constexpr auto get_gzipped_header(int size, const std::string& content_type = "t
   return "HTTP/1.1 200 OK\r\n"
          "Content-Type: " + content_type + "\r\n"
          "Content-Length: " + std::to_string(size) + "\r\n"
+         "Content-Encoding: gzip\r\n"
          "Connection: close\r\n"
          "\r\n";
 }
@@ -109,9 +110,9 @@ int main() {
       close(new_socket);
     };
 
-    auto header = get_gzipped_header(TAILWIND_DATA.size());
-    auto* tw_data = TAILWIND_DATA.data();
-    auto tw_size = TAILWIND_DATA.size();
+    auto header = get_gzipped_header(TAILWIND_GZ_DATA.size());
+    auto* tw_data = TAILWIND_GZ_DATA.data();
+    auto tw_size = TAILWIND_GZ_DATA.size();
     auto send_tailwind = [&] {
           std::cout << "Serving tailwind.js\n";
           send(new_socket, header.c_str(), header.size(), 0);

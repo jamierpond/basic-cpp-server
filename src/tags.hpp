@@ -18,6 +18,16 @@ template <size_t N> struct StringLiteral {
   }
 };
 
+// simple struct to hold the attributes with helpers
+template <typename Key, typename Value, size_t N> struct KvStaticArray {
+  std::array<std::pair<Key, Value>, N> data{};
+  size_t size = 0;
+  constexpr void add(const Key &key, const Value &value) {
+    // don't oopsie-daisy the size
+    data[size++] = {key, value};
+  }
+};
+
 // with_href, with_id, with_src
 #define WITH_FOO(Foo)                                                          \
   template <typename T> constexpr auto with_##Foo(const T &t) const {          \
@@ -27,18 +37,11 @@ template <size_t N> struct StringLiteral {
 template <
   StringLiteral TagName,
   StringLiteral ClassNames = "",
-  typename StringImpl = std::string,
-  typename AttributeContainer = std::array<std::pair<StringImpl, StringImpl>, 8>
+  typename StringImpl = std::string
 >
 struct tag_base {
-//   struct Attributes {
-//     StringImpl style{}, id{}, href{}, src{}, alt{}, type{}, onclick{}, class_{}, lang{};
-//   };
+  KvStaticArray<StringImpl, StringImpl, 10> attributes{};
 
-  int num_attributes = 0;
-  AttributeContainer attributes{};
-
-  // Attributes attributes{};
   StringImpl content{};
   std::vector<StringImpl> children{};
 
@@ -82,9 +85,9 @@ public:
   WITH_FOO(onclick)
   WITH_FOO(lang)
 
-  constexpr auto with(const StringImpl &key, const StringImpl &value) const {
+  constexpr auto with(const StringImpl &key, const StringImpl &value = "") const {
     auto copy = *this;
-    copy.attributes[copy.num_attributes++] = {key, value};
+    copy.attributes.add(key, value);
     return copy;
   }
 
@@ -106,15 +109,20 @@ public:
     constexpr auto use_default_class = sizeof(ClassNames.value) > 1;
     if constexpr (use_default_class) {
       s += " class='";
-      // todo special case the class name atrribute from array
+      // todo special case the class name atrribute from arraymainmain
       s += ClassNames.value; // + StringImpl{attributes.class_};
       s += "'";
     }
 
-    for (const auto &[key, value] : attributes) {
-      if (key.empty() || value.empty()) { continue; }
+    for (const auto &[key, value] : attributes.data) {
+      if (key.empty()) { continue; }
       s += " ";
       s += key;
+
+      // allow for empty values, like defer
+      // script{foo}.with("defer"), for example
+      if (value.empty()) { continue; }
+
       s += "='";
       s += value;
       s += "'";
@@ -198,5 +206,6 @@ CREATE_TAG(img)
 CREATE_TAG(input)
 CREATE_TAG(button)
 CREATE_TAG(form)
+CREATE_TAG(svg)
 
 } // namespace html

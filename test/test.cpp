@@ -20,4 +20,8 @@ TEST_CASE("a with href") {
   REQUIRE(got == expexted);
 }
 
-
+TEST_CASE("meta with charset") {
+  auto got = pond::meta{}.with("charset", "UTF-8").with("name", "viewport");
+  auto expexted = "<meta charset='UTF-8' name='viewport'></meta>";
+  REQUIRE(got.render() == expexted);
+}
