@@ -24,7 +24,7 @@ constexpr auto create_http_response_from_html(const std::string& body) {
             pond::meta{}.with("charset", "UTF-8"),
             pond::meta{}.with("name", "viewport")
                         .with("content", "width=device-width, initial-scale=1.0"),
-            pond::script{}.with_src("/tailwind").with("defer", ""),
+            pond::script{std::string{TAILWIND_DATA_STR}},
             pond::title{"Jamie Pond's C++ HTTP Server"}
         },
         pond::body{body}
@@ -110,22 +110,22 @@ int main() {
       close(new_socket);
     };
 
-    auto header = get_gzipped_header(TAILWIND_GZ_DATA.size());
-    auto* tw_data = TAILWIND_GZ_DATA.data();
-    auto tw_size = TAILWIND_GZ_DATA.size();
-    auto send_tailwind = [&] {
-          std::cout << "Serving tailwind.js\n";
-          send(new_socket, header.c_str(), header.size(), 0);
-          send(new_socket, tw_data, tw_size, 0);
-          close(new_socket);
-    };
+//     auto header = get_gzipped_header(TAILWIND_GZ_DATA.size());
+//     auto* tw_data = TAILWIND_GZ_DATA.data();
+//     auto tw_size = TAILWIND_GZ_DATA.size();
+//     auto send_tailwind = [&] {
+//           std::cout << "Serving tailwind.js\n";
+//           send(new_socket, header.c_str(), header.size(), 0);
+//           send(new_socket, tw_data, tw_size, 0);
+//           close(new_socket);
+//     };
 
     const auto content_lookup = std::unordered_map<std::string, std::function<void()>> {
         {"/", [&] { send_page(home("/")); }},
         {"/emily", [&] { send_page(emily()); }},
         {"/shop", [&] { send_page(shop()); }},
         {"/dash", [&] { send_page(dashboard::dashboard()); }},
-        {"/tailwind", send_tailwind}
+        // {"/tailwind", send_tailwind}
     };
 
 
