@@ -101,14 +101,15 @@ public:
   }
 
   // Render function
-  constexpr StringImpl render() const {
+  constexpr StringImpl render(bool with_double_quotes = false) const {
+    StringImpl quote = with_double_quotes ? "\"" : "'";
     StringImpl s;
     s += "<";
     s += TagName.value;
 
     constexpr auto use_default_class = sizeof(ClassNames.value) > 1;
     if constexpr (use_default_class) {
-      s += " class='";
+      s += " class=" + quote;
       // todo special case the class name atrribute from arraymainmain
       s += ClassNames.value; // + StringImpl{attributes.class_};
       s += "'";
@@ -123,9 +124,9 @@ public:
       // script{foo}.with("defer"), for example
       if (value.empty()) { continue; }
 
-      s += "='";
+      s += "=" + quote;
       s += value;
-      s += "'";
+      s += quote;
     }
 
     s += ">";
@@ -207,5 +208,6 @@ CREATE_TAG(input)
 CREATE_TAG(button)
 CREATE_TAG(form)
 CREATE_TAG(svg)
+CREATE_TAG(path)
 
 } // namespace html

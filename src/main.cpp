@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include <functional>
+#include <fstream>
 
 #include "home.hpp"
 #include "emily.hpp"
@@ -105,20 +106,17 @@ int main() {
     }
 
     auto send_page = [&new_socket] (const auto& content) {
+      // write to file for debugging
+      // ./debug.html
+      std::ofstream file;
+      file.open("debug.html");
+      file << content;
+      file.close();
+
       auto c = create_http_response_from_html(content);
       send(new_socket, c.c_str(), c.size(), 0);
       close(new_socket);
     };
-
-//     auto header = get_gzipped_header(TAILWIND_GZ_DATA.size());
-//     auto* tw_data = TAILWIND_GZ_DATA.data();
-//     auto tw_size = TAILWIND_GZ_DATA.size();
-//     auto send_tailwind = [&] {
-//           std::cout << "Serving tailwind.js\n";
-//           send(new_socket, header.c_str(), header.size(), 0);
-//           send(new_socket, tw_data, tw_size, 0);
-//           close(new_socket);
-//     };
 
     const auto content_lookup = std::unordered_map<std::string, std::function<void()>> {
         {"/", [&] { send_page(home("/")); }},

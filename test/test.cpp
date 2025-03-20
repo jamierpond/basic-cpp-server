@@ -25,3 +25,37 @@ TEST_CASE("meta with charset") {
   auto expexted = "<meta charset='UTF-8' name='viewport'></meta>";
   REQUIRE(got.render() == expexted);
 }
+
+TEST_CASE("svg") {
+  auto svg = pond::svg {
+    pond::path{}.with("d", "smth-cool").with("fill", "#lemon"),
+    pond::path{}.with("d", "smth-cool").with("fill", "#lemon")
+  }
+  .with("version", "1.1")
+  .with("xmlns", "http://www.w3.org/2000/svg").render();
+
+  auto expexted = "<svg version='1.1' xmlns='http://www.w3.org/2000/svg'><path d='smth-cool' fill='#lemon'></path><path d='smth-cool' fill='#lemon'></path></svg>";
+  REQUIRE(svg == expexted);
+}
+
+
+TEST_CASE("imgimg") {
+  auto svg = pond::svg {
+    pond::path{}.with("d", "smth-cool").with("fill", "#lemon"),
+    pond::path{}.with("d", "smth-cool").with("fill", "#lemon")
+  }
+  .with("version", "1.1")
+  .with("xmlns", "http://www.w3.org/2000/svg").render();
+
+  auto expexted = "<svg version='1.1' xmlns='http://www.w3.org/2000/svg'><path d='smth-cool' fill='#lemon'></path><path d='smth-cool' fill='#lemon'></path></svg>";
+  REQUIRE(svg == expexted);
+
+
+  auto img = pond::div<"w-8 h-8"> {
+    pond::img{}.with("src", "data:image/svg+xml;utf8," + svg).with("alt", "logo")
+  };
+
+  auto expexted_img = "<div class='w-8 h-8'><img src='data:image/svg+xml;utf8,<svg version='1.1' xmlns='http://www.w3.org/2000/svg'><path d='smth-cool' fill='#lemon'></path><path d='smth-cool' fill='#lemon'></path></svg>' alt='logo'></img></div>";
+  REQUIRE(img.render() == expexted_img);
+}
+

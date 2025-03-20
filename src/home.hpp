@@ -3,7 +3,7 @@
 #include "layout.hpp"
 #include "encoding.hpp"
 #include <cstdint>
-#include "linkedin_logo.hpp"
+#include "logo_svgs.hpp"
 
 struct CounterState {
     uint64_t count = 0;
@@ -41,8 +41,8 @@ constexpr auto home(const std::string_view& path) {
               .with_href(links::EMAIL)
             },
             pond::div<"flex flex-row space-x-4">{
-                a{svg<"w-8 h-8">{LINKEDIN_LOGO}}.with_href(links::LINKEDIN),
-                a{img<"w-8 h-8">{}.with_src(links::TWITTER_IMG)}.with_href(links::TWITTER)
+                a{get_linkedin_logo()}.with_href(links::LINKEDIN),
+                a{get_bsky_logo()}.with_href(links::BSKY)
             }
     ).render();
 }

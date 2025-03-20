@@ -3,7 +3,7 @@
 
 namespace links {
   constexpr auto LINKEDIN = "https://www.linkedin.com/in/jamierpond";
-  constexpr auto TWITTER = "https://twitter.com/jamiepondx";
+  constexpr auto BSKY = "https://bsky.app/profile/pond.audio";
   constexpr auto EMAIL = "mailto:jamie@pond.audio";
 
   constexpr auto MAYK = "https://www.mayk.it";
@@ -21,7 +21,7 @@ constexpr auto NavBar() {
     pond::div<"text-xl font-bold text-gray-900 ml-4">{"Jamie Pond"},
     pond::div<"flex space-x-6 mr-4">{
       a<"text-gray-700 hover:text-blue-500 transition-all">{"LinkedIn"}.with_href(links::LINKEDIN),
-      a<"text-gray-700 hover:text-blue-500 transition-all">{"Twitter"}.with_href(links::TWITTER),
+      a<"text-gray-700 hover:text-blue-500 transition-all">{"Twitter"}.with_href(links::BSKY),
       a<"text-gray-700 hover:text-blue-500 transition-all">{"Email"}.with_href(links::EMAIL)
     }
   };
