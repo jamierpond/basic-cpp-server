@@ -18,18 +18,8 @@
 constexpr static auto PORT = 3000;
 
 constexpr auto create_http_response_from_html(const std::string& body) {
-    std::string doctype = "<!DOCTYPE html>";
-
-    auto html = pond::html{
-        pond::head{
-            pond::meta{}.with("charset", "UTF-8"),
-            pond::meta{}.with("name", "viewport")
-                        .with("content", "width=device-width, initial-scale=1.0"),
-            pond::script{}.with("src", "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4").with("defer", "true"),
-            pond::title{"Jamie Pond's C++ HTTP Server"}
-        },
-        pond::body{body}
-    }.render();
+    auto doctype = "<!DOCTYPE html>";
+    auto html = doctype + body;
 
     return "HTTP/1.1 200 OK\r\n"
            "Content-Type: text/html\r\n"
