@@ -34,14 +34,23 @@ template <typename Key, typename Value, size_t N> struct KvStaticArray {
     return with(#Foo, t);                                                      \
   }
 
+
+enum class ClosingOption {
+  Full,
+  SelfClosing,
+  Void
+};
+
 template <
   StringLiteral TagName,
   StringLiteral ClassNames = "",
+  ClosingOption Closing = ClosingOption::Full,
   typename StringImpl = std::string
 >
 struct tag_base {
   KvStaticArray<StringImpl, StringImpl, 10> attributes{};
 
+  constexpr static bool ContentDisallowed = Closing != ClosingOption::Full;
   StringImpl content{};
   std::vector<StringImpl> children{};
 
@@ -49,8 +58,13 @@ public:
   // Constructors for text content
   constexpr tag_base() = default;
 
-  constexpr tag_base(const char *str) : content(str) {}
-  constexpr tag_base(const StringImpl &s) : content(s) {}
+  constexpr tag_base(const char *str) : content(str) {
+    static_assert(!ContentDisallowed, "Content disallowed for full tags");
+  }
+
+  constexpr tag_base(const StringImpl &s) : content(s) {
+    static_assert(!ContentDisallowed, "Content is only allowed for full tags");
+  }
 
   // Single-argument constructor: if it's string-like, use it as content;
   // otherwise, assume it's another tag and call .render()
@@ -67,6 +81,14 @@ public:
   constexpr tag_base(const First &first, const Rest &...rest)
       : tag_base(first) {
     (add_child(rest), ...);
+  }
+
+  constexpr static bool is_self_closing() {
+    return Closing == ClosingOption::SelfClosing;
+  }
+
+  constexpr static bool is_void() {
+    return Closing == ClosingOption::Void;
   }
 
   // Copy constructor
@@ -129,8 +151,11 @@ public:
       s += quote;
     }
 
-    s += ">";
 
+    if (is_self_closing()) { return s + "/>"; }
+    if (is_void())         { return s + ">"; }
+
+    s += ">";
     if (!content.empty()) {
       s += content;
     }
@@ -147,10 +172,10 @@ public:
 };
 
 // Helper macro to define specific tags
-#define CREATE_TAG(Tag)                                                        \
+#define CREATE_TAG(Tag, CloseOption) \
   template <StringLiteral ClassName = "", typename StringImpl = std::string>   \
-  struct Tag : tag_base<#Tag, ClassName> {                                     \
-    using tag_base<#Tag, ClassName>::tag_base;                                 \
+  struct Tag : tag_base<#Tag, ClassName, CloseOption> {                                     \
+    using tag_base<#Tag, ClassName, CloseOption>::tag_base;                                 \
   };                                                                           \
                                                                                \
   template <StringLiteral ClassName = "", typename StringImpl = std::string>   \
@@ -163,51 +188,51 @@ public:
                                                                                \
   template <StringLiteral ClassName = ""> Tag(const char *) -> Tag<ClassName>;
 
-CREATE_TAG(div)
-CREATE_TAG(p)
-CREATE_TAG(b)
-CREATE_TAG(h1)
-CREATE_TAG(h2)
-CREATE_TAG(h3)
-CREATE_TAG(h4)
-CREATE_TAG(h5)
-CREATE_TAG(h6)
-CREATE_TAG(html)
-CREATE_TAG(span)
-CREATE_TAG(body)
-CREATE_TAG(head)
-CREATE_TAG(title)
-CREATE_TAG(meta)
-CREATE_TAG(link)
-CREATE_TAG(script)
-CREATE_TAG(style)
-CREATE_TAG(header)
-CREATE_TAG(footer)
+CREATE_TAG(div, ClosingOption::Full)
+CREATE_TAG(p, ClosingOption::Full)
+CREATE_TAG(b, ClosingOption::Full)
+CREATE_TAG(h1, ClosingOption::Full)
+CREATE_TAG(h2, ClosingOption::Full)
+CREATE_TAG(h3, ClosingOption::Full)
+CREATE_TAG(h4, ClosingOption::Full)
+CREATE_TAG(h5, ClosingOption::Full)
+CREATE_TAG(h6, ClosingOption::Full)
+CREATE_TAG(html, ClosingOption::Full)
+CREATE_TAG(span, ClosingOption::Full)
+CREATE_TAG(body, ClosingOption::Full)
+CREATE_TAG(head, ClosingOption::Full)
+CREATE_TAG(title, ClosingOption::Full)
+CREATE_TAG(link, ClosingOption::Full)
+CREATE_TAG(script, ClosingOption::Full)
+CREATE_TAG(style, ClosingOption::Full)
+CREATE_TAG(header, ClosingOption::Full)
+CREATE_TAG(footer, ClosingOption::Full)
+CREATE_TAG(ul, ClosingOption::Full)
+CREATE_TAG(ol, ClosingOption::Full)
+CREATE_TAG(li, ClosingOption::Full)
+CREATE_TAG(nav, ClosingOption::Full)
+CREATE_TAG(section, ClosingOption::Full)
+CREATE_TAG(article, ClosingOption::Full)
+CREATE_TAG(main, ClosingOption::Full)
+CREATE_TAG(aside, ClosingOption::Full)
+CREATE_TAG(table, ClosingOption::Full)
+CREATE_TAG(tr, ClosingOption::Full)
+CREATE_TAG(th, ClosingOption::Full)
+CREATE_TAG(td, ClosingOption::Full)
+CREATE_TAG(thead, ClosingOption::Full)
+CREATE_TAG(tbody, ClosingOption::Full)
+CREATE_TAG(tfoot, ClosingOption::Full)
+CREATE_TAG(col, ClosingOption::Full)
+CREATE_TAG(a, ClosingOption::Full)
+CREATE_TAG(img, ClosingOption::Full)
+CREATE_TAG(input, ClosingOption::Full)
+CREATE_TAG(button, ClosingOption::Full)
+CREATE_TAG(form, ClosingOption::Full)
+CREATE_TAG(svg, ClosingOption::Full)
+CREATE_TAG(path, ClosingOption::Full)
 
-CREATE_TAG(ul)
-CREATE_TAG(ol)
-CREATE_TAG(li)
-CREATE_TAG(nav)
-CREATE_TAG(section)
-CREATE_TAG(article)
-CREATE_TAG(main)
-CREATE_TAG(aside)
-CREATE_TAG(table)
-CREATE_TAG(tr)
-CREATE_TAG(th)
-CREATE_TAG(td)
-CREATE_TAG(thead)
-CREATE_TAG(tbody)
-CREATE_TAG(tfoot)
-CREATE_TAG(col)
+CREATE_TAG(meta, ClosingOption::Void)
+static_assert(meta{}.is_void());
 
-
-CREATE_TAG(a)
-CREATE_TAG(img)
-CREATE_TAG(input)
-CREATE_TAG(button)
-CREATE_TAG(form)
-CREATE_TAG(svg)
-CREATE_TAG(path)
 
 } // namespace html

@@ -22,7 +22,7 @@ TEST_CASE("a with href") {
 
 TEST_CASE("meta with charset") {
   auto got = pond::meta{}.with("charset", "UTF-8").with("name", "viewport");
-  auto expexted = "<meta charset='UTF-8' name='viewport'></meta>";
+  auto expexted = "<meta charset='UTF-8' name='viewport'>";
   REQUIRE(got.render() == expexted);
 }
 
@@ -57,5 +57,13 @@ TEST_CASE("imgimg") {
 
   auto expexted_img = "<div class='w-8 h-8'><img src='data:image/svg+xml;utf8,<svg version='1.1' xmlns='http://www.w3.org/2000/svg'><path d='smth-cool' fill='#lemon'></path><path d='smth-cool' fill='#lemon'></path></svg>' alt='logo'></img></div>";
   REQUIRE(img.render() == expexted_img);
+}
+
+TEST_CASE("close tags") {
+  auto meta = pond::meta{}.with("foo", "bar");
+  auto got = meta.render();
+  std::cout << std::string{got} << std::endl;
+  auto expexted = "<meta foo='bar'>";
+  REQUIRE(got == expexted);
 }
 
