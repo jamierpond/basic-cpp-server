@@ -2,22 +2,17 @@
 #include "tags.hpp"
 #include "layout.hpp"
 #include "encoding.hpp"
-#include <cstdint>
 #include "logo_svgs.hpp"
-
-struct CounterState {
-    uint64_t count = 0;
-};
-
-using Encoding = StringEncoder<char_sets::Base62Encoding, uint64_t, true, true>;
 
 constexpr auto home(const std::string_view& path) {
     using namespace pond;
-    return layout(
+    return layout (
             "Jamie Pond",
-            p {
-               "I'm Lead Audio Software Engineer at ",
-               a{"mayk"}.with_href(links::MAYK)
+            button {
+              p {
+                 "I'm Lead Audio Software Engineer at ",
+                 a{"mayk"}.with_href(links::MAYK)
+              }.with("hx-get", "/clicked").with("hx-swap", "outerHTML"),
             },
             p {
               "I studied ", span<"font-bold">{"Sound & Music Computing MSc"},

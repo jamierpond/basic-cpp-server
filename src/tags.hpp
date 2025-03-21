@@ -1,10 +1,18 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <string>
 #include <type_traits>
 #include <vector>
-#include <array>
+
+namespace hx {
+struct command { constexpr static std::string_view cmd = "";};
+struct get : command { constexpr static std::string_view cmd = "hx-get";};
+struct post : command { constexpr static std::string_view cmd = "hx-post";};
+struct swap : command { constexpr static std::string_view cmd = "hx-swap";};
+} // namespace hx
+
 
 namespace pond {
 
@@ -16,6 +24,12 @@ template <size_t N> struct StringLiteral {
     static_assert(M <= N, "StringLiteral too large");
     std::copy_n(other.value, M, value);
   }
+};
+
+template <hx::command Command, StringLiteral Value>
+struct hx_pair {
+  std::string_view value = std::string_view{Value};
+  constexpr static std::string_view cmd = Command.cmd;
 };
 
 // simple struct to hold the attributes with helpers
@@ -34,19 +48,11 @@ template <typename Key, typename Value, size_t N> struct KvStaticArray {
     return with(#Foo, t);                                                      \
   }
 
+enum class ClosingOption { Full, SelfClosing, Void };
 
-enum class ClosingOption {
-  Full,
-  SelfClosing,
-  Void
-};
-
-template <
-  StringLiteral TagName,
-  StringLiteral ClassNames = "",
-  ClosingOption Closing = ClosingOption::Full,
-  typename StringImpl = std::string
->
+template <StringLiteral TagName, StringLiteral ClassNames = "",
+          ClosingOption Closing = ClosingOption::Full,
+          typename StringImpl = std::string>
 struct tag_base {
   KvStaticArray<StringImpl, StringImpl, 10> attributes{};
 
@@ -54,7 +60,6 @@ struct tag_base {
   StringImpl content{};
   std::vector<StringImpl> children{};
 
-public:
   // Constructors for text content
   constexpr tag_base() = default;
 
@@ -65,6 +70,13 @@ public:
   constexpr tag_base(const StringImpl &s) : content(s) {
     static_assert(!ContentDisallowed, "Content is only allowed for full tags");
   }
+
+  // constructor for variadic hx_pairs
+  template <typename... hx_pair>
+  constexpr tag_base(const hx_pair &...hx_pairs) {
+    (attributes.add(hx_pairs.first.cmd, hx_pairs.second), ...);
+  }
+
 
   // Single-argument constructor: if it's string-like, use it as content;
   // otherwise, assume it's another tag and call .render()
@@ -87,9 +99,7 @@ public:
     return Closing == ClosingOption::SelfClosing;
   }
 
-  constexpr static bool is_void() {
-    return Closing == ClosingOption::Void;
-  }
+  constexpr static bool is_void() { return Closing == ClosingOption::Void; }
 
   // Copy constructor
   constexpr tag_base(const tag_base &other)
@@ -107,15 +117,15 @@ public:
   WITH_FOO(onclick)
   WITH_FOO(lang)
 
-  constexpr auto with(const StringImpl &key, const StringImpl &value = "") const {
+  constexpr auto with(const StringImpl &key,
+                      const StringImpl &value = "") const {
     auto copy = *this;
     copy.attributes.add(key, value);
     return copy;
   }
 
   // Helper to add a child tag or string
-  template <typename T>
-  constexpr void add_child(const T &child) {
+  template <typename T> constexpr void add_child(const T &child) {
     static_assert(!ContentDisallowed, "Content disallowed for full tags");
     if constexpr (std::is_convertible_v<T, StringImpl>) {
       children.push_back(child);
@@ -140,21 +150,29 @@ public:
     }
 
     for (const auto &[key, value] : attributes.data) {
-      if (key.empty()) { continue; }
+      if (key.empty()) {
+        continue;
+      }
       s += " ";
       s += key;
 
       // allow for empty values, like defer
       // script{foo}.with("defer"), for example
-      if (value.empty()) { continue; }
+      if (value.empty()) {
+        continue;
+      }
 
       s += "=" + quote;
       s += value;
       s += quote;
     }
 
-    if (is_self_closing()) { return s + "/>"; }
-    if (is_void())         { return s + ">"; }
+    if (is_self_closing()) {
+      return s + "/>";
+    }
+    if (is_void()) {
+      return s + ">";
+    }
 
     s += ">";
     if (!content.empty()) {
@@ -172,11 +190,14 @@ public:
   }
 };
 
+
+
+
 // Helper macro to define specific tags
-#define CREATE_TAG(Tag, CloseOption) \
+#define CREATE_TAG(Tag, CloseOption)                                           \
   template <StringLiteral ClassName = "", typename StringImpl = std::string>   \
-  struct Tag : tag_base<#Tag, ClassName, CloseOption> {                                     \
-    using tag_base<#Tag, ClassName, CloseOption>::tag_base;                                 \
+  struct Tag : tag_base<#Tag, ClassName, CloseOption> {                        \
+    using tag_base<#Tag, ClassName, CloseOption>::tag_base;                    \
   };                                                                           \
                                                                                \
   template <StringLiteral ClassName = "", typename StringImpl = std::string>   \
@@ -185,9 +206,15 @@ public:
   template <StringLiteral ClassName = "", typename... T>                       \
   Tag(const T &...) -> Tag<ClassName>;                                         \
                                                                                \
+                                                                               \
   template <typename... T> Tag(T &&...) -> Tag<"">;                            \
                                                                                \
-  template <StringLiteral ClassName = ""> Tag(const char *) -> Tag<ClassName>;
+  template <StringLiteral ClassName = ""> Tag(const char *) -> Tag<ClassName>; \
+                                                                               \
+                                                                               \
+//   template <hx_pair... Pairs, StringLiteral ClassName = "",                 \
+//             typename StringImpl = std::string>                              \
+//   Tag(const hx_pair &...) -> Tag<ClassName>;                                \
 
 CREATE_TAG(div, ClosingOption::Full)
 CREATE_TAG(p, ClosingOption::Full)
@@ -235,5 +262,4 @@ CREATE_TAG(path, ClosingOption::Full)
 CREATE_TAG(meta, ClosingOption::Void)
 static_assert(meta{}.is_void());
 
-
-} // namespace html
+} // namespace pond

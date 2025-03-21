@@ -7,17 +7,16 @@
 #include <string>
 #include <unordered_map>
 #include <functional>
-#include <fstream>
 
 #include "home.hpp"
 #include "emily.hpp"
 #include "shop.hpp"
 #include "dashboard.hpp"
+#include "tags.hpp"
 
 constexpr static auto PORT = 3000;
 
-constexpr auto create_http_response_from_html(const std::string& body) {
-    auto doctype = "<!DOCTYPE html>";
+constexpr auto create_http_response_from_html(const std::string& body, const std::string& doctype = "<!DOCTYPE html>") {
     auto html = doctype + body;
 
     return "HTTP/1.1 200 OK\r\n"
@@ -67,7 +66,7 @@ static_assert(get_request_path("GET /index/lemon HTTP/1.1") == "/index/lemon");
 
 
 int main() {
-    int server_fd, new_socket;
+    int server_fd;
     sockaddr_in address{};
     socklen_t addrlen = sizeof(address);
     char buffer[1024] = {0};
@@ -94,38 +93,36 @@ int main() {
         return 1;
     }
 
-    auto send_page = [&new_socket] (const auto& content) {
-      // write to file for debugging
-      // ./debug.html
-      std::ofstream file;
-      file.open("debug.html");
-      file << content;
-      file.close();
-
-      auto c = create_http_response_from_html(content);
-      send(new_socket, c.c_str(), c.size(), 0);
-      close(new_socket);
-    };
-
-    const auto content_lookup = std::unordered_map<std::string, std::function<void()>> {
-        {"/", [&] { send_page(home("/")); }},
-        {"/emily", [&] { send_page(emily()); }},
-        {"/shop", [&] { send_page(shop()); }},
-        {"/dash", [&] { send_page(dashboard::dashboard()); }},
-    };
-
-
     std::cout << "Server listening on port " << PORT << "...\n";
 
-    while (true) {
-        new_socket = accept(server_fd, (struct sockaddr*)&address, &addrlen);
+    for (;;) {
+        auto new_socket = accept(server_fd, (struct sockaddr*)&address, &addrlen);
         if (new_socket < 0) {
             std::cerr << "Accept failed\n";
             continue;
         }
 
-        read(new_socket, buffer, sizeof(buffer));
+        auto send_page = [&new_socket] (const auto& content, const std::string& doctype = "<!DOCTYPE html>") {
+          std::cout << "Sending page\n";
+          std::cout << content << '\n';
+          auto c = create_http_response_from_html(content, doctype);
+          send(new_socket, c.c_str(), c.size(), 0);
+          close(new_socket);
+        };
 
+        const auto clicked_response = pond::div {
+          pond::h2 { "hell yeah pretty cool" }
+        };
+
+        const auto content_lookup = std::unordered_map<std::string, std::function<void()>> {
+            {"/", [&] { send_page(home("/")); }},
+            {"/emily", [&] { send_page(emily()); }},
+            {"/shop", [&] { send_page(shop()); }},
+            {"/dash", [&] { send_page(dashboard::dashboard()); }},
+            {"/clicked", [&] { send_page(clicked_response.render(), ""); }},
+        };
+
+        read(new_socket, buffer, sizeof(buffer));
         auto request = std::string{buffer};
         auto path = get_request_path(request);
         auto response = std::string{};
