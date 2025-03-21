@@ -114,7 +114,9 @@ public:
   }
 
   // Helper to add a child tag or string
-  template <typename T> constexpr void add_child(const T &child) {
+  template <typename T>
+  constexpr void add_child(const T &child) {
+    static_assert(!ContentDisallowed, "Content disallowed for full tags");
     if constexpr (std::is_convertible_v<T, StringImpl>) {
       children.push_back(child);
     } else {
@@ -150,7 +152,6 @@ public:
       s += value;
       s += quote;
     }
-
 
     if (is_self_closing()) { return s + "/>"; }
     if (is_void())         { return s + ">"; }
