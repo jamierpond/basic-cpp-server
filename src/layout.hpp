@@ -15,7 +15,7 @@ namespace links {
   constexpr auto TWITTER_IMG = "https://seeklogo.com/images/T/twitter-x-logo-101C7D2420-seeklogo.com.png?v=638258862800000000";
 };
 
-constexpr auto NavBar() {
+constexpr auto nav_bar() {
   using namespace pond;
   return pond::nav<"bg-white shadow-md p-4 w-full fixed top-0 left-0 flex justify-between items-center">{
     pond::div<"text-xl font-bold text-gray-900 ml-4">{"Jamie Pond"},
@@ -33,23 +33,17 @@ constexpr auto layout(std::string title, T&&... body) {
   using namespace pond;
   return
     html {
-
-      head {
-        pond::title{title},
-      },
-
+      head { pond::title{title} },
       pond::body<"text-gray-900 p-4 min-h-screen flex items-center justify-center"> {
-
-      NavBar(),
-      pond::div <"min-h-screen flex items-center justify-center"> {
-        pond::div<"w-full flex flex-col items-center">{
-          pond::div<"flex flex-col text-center items-center justify-center p-8 space-y-8">{
-            std::forward<T>(body)...
+          nav_bar(),
+          pond::div <"min-h-screen flex items-center justify-center"> {
+            pond::div<"w-full flex flex-col items-center">{
+              pond::div<"flex flex-col text-center items-center justify-center p-8 space-y-8">{
+                std::forward<T>(body)...
+              }
+            }
           }
-        }
       }
-
-    }
-  };
+    };
 }
 

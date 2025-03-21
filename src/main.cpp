@@ -13,7 +13,7 @@
 #include "emily.hpp"
 #include "shop.hpp"
 #include "dashboard.hpp"
-#include "js/tailwind_gz.hpp"
+// #include "js/tailwind_gz.hpp"
 
 constexpr static auto PORT = 3000;
 
@@ -25,7 +25,7 @@ constexpr auto create_http_response_from_html(const std::string& body) {
             pond::meta{}.with("charset", "UTF-8"),
             pond::meta{}.with("name", "viewport")
                         .with("content", "width=device-width, initial-scale=1.0"),
-            pond::script{std::string{TAILWIND_DATA_STR}},
+            pond::script{}.with("src", "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4").with("defer", "true"),
             pond::title{"Jamie Pond's C++ HTTP Server"}
         },
         pond::body{body}
