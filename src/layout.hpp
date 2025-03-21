@@ -37,7 +37,8 @@ constexpr auto layout(std::string title, T&&... body) {
           pond::meta{}.with("charset", "UTF-8"),
           pond::meta{}.with("name", "viewport")
                       .with("content", "width=device-width, initial-scale=1.0"),
-          pond::script{}.with("src", "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4").with("defer", "true"),
+          pond::script{}.with("src", "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4")
+            .with("defer", "true"),
           pond::title{"Jamie Pond's C++ HTTP Server"}
       },
       pond::body<"text-gray-900 p-4 min-h-screen flex items-center justify-center"> {
