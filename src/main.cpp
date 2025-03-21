@@ -13,7 +13,6 @@
 #include "emily.hpp"
 #include "shop.hpp"
 #include "dashboard.hpp"
-// #include "js/tailwind_gz.hpp"
 
 constexpr static auto PORT = 3000;
 
@@ -113,7 +112,6 @@ int main() {
         {"/emily", [&] { send_page(emily()); }},
         {"/shop", [&] { send_page(shop()); }},
         {"/dash", [&] { send_page(dashboard::dashboard()); }},
-        // {"/tailwind", send_tailwind}
     };
 
 
