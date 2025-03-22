@@ -5,12 +5,10 @@ namespace links {
   constexpr auto CPAL = "https://github.com/rustaudio/cpal";
   constexpr auto ZOO = "https://github.com/thecppzoo/zoo";
   constexpr auto XSIMD = "https://github.com/xtensor-stack/xsimd";
-
   constexpr auto GITHUB = "https://github.com/jamierpond";
   constexpr auto LINKEDIN = "https://www.linkedin.com/in/jamierpond";
   constexpr auto BSKY = "https://bsky.app/profile/pond.audio";
   constexpr auto EMAIL = "mailto:jamie@pond.audio";
-
   constexpr auto MAYK = "https://www.mayk.it";
   constexpr auto QMUL = "https://www.qmul.ac.uk";
   constexpr auto QMUL_SMC = "https://www.qmul.ac.uk/postgraduate/taught/coursefinder/courses/sound-and-music-computing-msc";
@@ -18,19 +16,21 @@ namespace links {
   constexpr auto ADC_2023 = "https://www.youtube.com/watch?v=1lEWl-MTA6k&ab_channel=ADC-AudioDeveloperConference";
   constexpr auto CPPONSEA_2024 = "https://www.youtube.com/watch?v=4h7UZnWN67Y&ab_channel=cpponsea";
   constexpr auto CPPCON_2024 = "https://www.youtube.com/watch?v=7n1CVURp0DY&t=1299s&ab_channel=CppCon";
-
   constexpr auto LINKEDIN_IMG = "https://content.linkedin.com/content/dam/me/business/en-us/amp/brand-site/v2/bg/LI-Bug.svg.original.svg";
 };
 
 constexpr auto nav_bar() {
   using namespace pond;
+  constexpr auto hover_link = [](const auto& text, const auto& path) {
+    return a<"text-gray-700 hover:text-blue-500 transition-all"> {text}.with_href(path);
+  };
   return pond::nav<"bg-white shadow-md p-4 w-full fixed top-0 left-0 flex justify-between items-center">{
     pond::div<"text-xl font-bold text-gray-900 ml-4">{"Jamie Pond"},
     pond::div<"flex space-x-6 mr-4">{
-      a<"text-gray-700 hover:text-blue-500 transition-all">{"GitHub"}.with_href(links::GITHUB),
-      a<"text-gray-700 hover:text-blue-500 transition-all">{"LinkedIn"}.with_href(links::LINKEDIN),
-      a<"text-gray-700 hover:text-blue-500 transition-all">{"BSky"}.with_href(links::BSKY),
-      a<"text-gray-700 hover:text-blue-500 transition-all">{"Email"}.with_href(links::EMAIL),
+      hover_link("GitHub", links::GITHUB),
+      hover_link("LinkedIn", links::LINKEDIN),
+      hover_link("BSky", links::BSKY),
+      hover_link("Email", links::EMAIL),
     }
   };
 }
