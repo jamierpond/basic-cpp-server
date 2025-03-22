@@ -9,19 +9,22 @@ constexpr auto home(const std::string_view& path) {
     // alias p to pond
 
     return layout (
-        "Jamie Pond",
+        "",
         button {
             p {
                 "I'm Lead Audio Software Engineer at ",
-                a{"mayk"}.with_href(links::MAYK)
+                styled::link("mayk", links::MAYK),
             }.with("hx-get", "/clicked").with("hx-swap", "outerHTML"),
         },
         p {"I build AI-powered music apps with optimized real-time audio engines and fast inference systems."},
         p {
-            "Speaker at ", styled::link("CppCon 2024", ""),
-            ", ", styled::link("C++ On Sea 2024", ""),
-            ", ", styled::link("ADC 2023", ""),
-            ", and ", styled::link("ADC 2022", ""), "."
+            "I've spoken at conferences including: ",
+            ul <"list-disc list-inside"> {
+              li {styled::link("CppCon 2024", links::CPPCON_2024)},
+              li {styled::link("C++ On Sea 2024", links::CPPONSEA_2024)},
+              li {styled::link("ADC 2023", links::ADC_2023)},
+              li {styled::link("ADC 2021", links::ADC_2021)},
+            }
         },
         p {
             "Open-source contributor: ",
@@ -30,13 +33,14 @@ constexpr auto home(const std::string_view& path) {
             ", ", styled::link("RustAudio/cpal", links::CPAL), "."
         },
         p {
-            "I studied ", span<"font-bold">{"Sound & Music Computing MSc"},
+            "I studied ", styled::link("Sound & Music Computing MSc", links::QMUL_SMC),
             " at ", styled::link("Queen Mary University of London", links::QMUL)
         },
         p { styled::link("Please feel free to hit me up!", links::EMAIL) },
         pond::div<"flex flex-row space-x-4">{
             a{get_linkedin_logo()}.with_href(links::LINKEDIN),
-            a{get_bsky_logo()}.with_href(links::BSKY)
+            a{get_bsky_logo()}.with_href(links::BSKY),
+            a{get_github_logo()}.with_href(links::GITHUB)
         }
     ).render();
 }

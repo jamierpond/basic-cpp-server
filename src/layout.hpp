@@ -13,8 +13,11 @@ namespace links {
 
   constexpr auto MAYK = "https://www.mayk.it";
   constexpr auto QMUL = "https://www.qmul.ac.uk";
+  constexpr auto QMUL_SMC = "https://www.qmul.ac.uk/postgraduate/taught/coursefinder/courses/sound-and-music-computing-msc";
   constexpr auto ADC_2021 = "https://www.youtube.com/watch?v=X8dPANPmC7E&ab_channel=JUCE";
   constexpr auto ADC_2023 = "https://www.youtube.com/watch?v=1lEWl-MTA6k&ab_channel=ADC-AudioDeveloperConference";
+  constexpr auto CPPONSEA_2024 = "https://www.youtube.com/watch?v=4h7UZnWN67Y&ab_channel=cpponsea";
+  constexpr auto CPPCON_2024 = "https://www.youtube.com/watch?v=7n1CVURp0DY&t=1299s&ab_channel=CppCon";
 
   constexpr auto LINKEDIN_IMG = "https://content.linkedin.com/content/dam/me/business/en-us/amp/brand-site/v2/bg/LI-Bug.svg.original.svg";
 };
@@ -35,6 +38,7 @@ constexpr auto nav_bar() {
 
 template <typename ...T>
 constexpr auto layout(std::string title, T&&... body) {
+  constexpr auto website_base_title = "Jamie Pond";
   using namespace pond;
   return
     html {
@@ -45,7 +49,7 @@ constexpr auto layout(std::string title, T&&... body) {
           pond::script{}.with("src", "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4").with("defer", "false"),
           pond::script{}.with("src", "https://unpkg.com/htmx.org@2.0.4")
             .with("defer", "true"),
-          pond::title{"Jamie Pond's C++ HTTP Server"}
+          pond::title{title + " | " + website_base_title},
       },
       pond::body<"text-gray-900 p-4 min-h-screen flex items-center justify-center"> {
           nav_bar(),
