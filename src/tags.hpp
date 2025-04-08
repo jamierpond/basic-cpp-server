@@ -14,6 +14,9 @@ struct swap : command { constexpr static std::string_view cmd = "hx-swap";};
 } // namespace hx
 
 
+struct ToString {};
+
+
 namespace pond {
 
 // String literal template for compile-time string handling
@@ -53,7 +56,7 @@ enum class ClosingOption { Full, SelfClosing, Void };
 template <StringLiteral TagName, StringLiteral ClassNames = "",
           ClosingOption Closing = ClosingOption::Full,
           typename StringImpl = std::string>
-struct tag_base {
+struct tag_base : public ToString {
   KvStaticArray<StringImpl, StringImpl, 10> attributes{};
 
   constexpr static bool ContentDisallowed = Closing != ClosingOption::Full;
@@ -258,6 +261,7 @@ CREATE_TAG(button, ClosingOption::Full)
 CREATE_TAG(form, ClosingOption::Full)
 CREATE_TAG(svg, ClosingOption::Full)
 CREATE_TAG(path, ClosingOption::Full)
+CREATE_TAG(pre, ClosingOption::Full)
 
 CREATE_TAG(meta, ClosingOption::Void)
 static_assert(meta{}.is_void());

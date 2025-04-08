@@ -3,6 +3,7 @@ project(MyProject VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -fexperimental-library")
 
 if(USE_ASAN)
     message(STATUS "Enabling Address Sanitizer")
@@ -28,8 +29,34 @@ if(USE_MSAN)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+# Find required Boost components
+find_package(Boost REQUIRED COMPONENTS system thread)
+
+# Check if Boost was found
+if(NOT Boost_FOUND)
+    message(FATAL_ERROR "Boost not found")
+endif()
+
+message(STATUS "Boost found: ${Boost_INCLUDE_DIRS}")
+
+# Find required OpenSSL package
+find_package(OpenSSL REQUIRED)
+
+# Add simdjson as a subdirectory
+add_subdirectory(third-party/simdjson)
+
 # Main executable
 add_executable(${PROJECT_NAME} src/main.cpp)
+
+# Link against Boost, OpenSSL, and simdjson
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    Boost::system
+    Boost::thread
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    pthread
+    simdjson
+)
 
 # Fetch and configure Catch2
 Include(FetchContent)

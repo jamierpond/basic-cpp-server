@@ -25,7 +25,7 @@ constexpr auto nav_bar() {
     return a<"text-gray-700 hover:text-blue-500 transition-all"> {text}.with_href(path);
   };
   return pond::nav<"bg-white shadow-md p-4 w-full fixed top-0 left-0 flex justify-between items-center">{
-    pond::div<"text-xl font-bold text-gray-900 ml-4">{"Jamie Pond"},
+    pond::a{pond::div<"text-xl font-bold text-gray-900 ml-4">{"Jamie Pond"}}.with_href("/"),
     pond::div<"flex space-x-6 mr-4">{
       hover_link("GitHub", links::GITHUB),
       hover_link("LinkedIn", links::LINKEDIN),

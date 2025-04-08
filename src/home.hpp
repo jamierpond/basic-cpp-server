@@ -9,7 +9,7 @@ constexpr auto home(const std::string_view& path) {
     // alias p to pond
 
     return layout (
-        "",
+        "Home",
         button {
             p {
                 "I'm Lead Audio Software Engineer at ",
