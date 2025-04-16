@@ -1,53 +1,45 @@
-FROM ubuntu:22.04
+# Builder stage
+FROM ubuntu:22.04 AS builder
 
-# Install dependencies including modern Clang and Ninja
+# Install all dependencies in a single layer and boost
 RUN apt-get update && apt-get install -y \
-    cmake \
-    git \
-    lsb-release \
-    wget \
-    software-properties-common \
-    gnupg \
-    ninja-build \
-    && rm -rf /var/lib/apt/lists/*
-
-# Add LLVM/Clang repository and install Clang 16
-RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
-    add-apt-repository "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-16 main" && \
-    apt-get update && \
-    apt-get install -y clang-16 lldb-16 lld-16 libc++-16-dev libc++abi-16-dev && \
+    cmake git wget software-properties-common gnupg ninja-build \
+    libssl-dev lsb-release clang \
+    libboost-all-dev \
+    --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
-
-# Set Clang as the default compiler
-ENV CC=clang-16
-ENV CXX=clang++-16
 
 # Set working directory
 WORKDIR /app
 
 # Copy source files
-COPY CMakeLists.txt .
-COPY test test
-COPY src src
+COPY . .
 
-# Build the project using Ninja
+# Build the project
 RUN mkdir -p build && cd build && \
-    cmake -G Ninja -DCMAKE_C_COMPILER=clang-16 -DCMAKE_CXX_COMPILER=clang++-16 \
-    -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_CXX_STANDARD=20 .. && \
+    cmake -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_COMPILER=clang \
+    -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
+    -DCMAKE_CXX_STANDARD=23 .. && \
     ninja
 
-# Run tests
-RUN cd build && \
-    ctest
+# Final stage - using smaller image
+FROM ubuntu:22.04
 
-# Expose the port the server runs on
+# Install only necessary runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libssl3 libc++1 --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy only the built binary
+COPY --from=builder /app/build/PondAudio .
+
+# Expose port
 EXPOSE 3000
 
-# cp the binary to the root directory
-RUN cp build/MyProject .
-
-# rm the build directory
-RUN rm -rf build
-
-# Run the server
-CMD ["./MyProject"]
+# Run server
+CMD ["./PondAudio"]

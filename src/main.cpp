@@ -47,7 +47,7 @@ handle_request(http::request<Body, http::basic_fields<Allocator>>&& req)
     };
 
     // Returns a not found response
-    auto const not_found = [&req](std::string_view target) {
+    auto const not_found = [&req](beast::string_view target) {
         http::response<http::string_body> res{http::status::not_found, req.version()};
         res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
         res.set(http::field::content_type, "text/html");

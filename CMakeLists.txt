@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.14)
-project(MyProject VERSION 1.0)
+project(PondAudio VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -fexperimental-library")
+
+# Define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT to handle C++20/23 compatibility
+add_compile_definitions(BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT)
+add_compile_definitions(BOOST_ASIO_DISABLE_STD_RESULT_OF)
 
 if(USE_ASAN)
     message(STATUS "Enabling Address Sanitizer")
