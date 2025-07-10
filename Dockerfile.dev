@@ -1,0 +1,27 @@
+FROM ubuntu:22.04
+
+# Install deps
+RUN apt-get update && apt-get install -y \
+    cmake git wget software-properties-common gnupg ninja-build \
+    libssl-dev lsb-release clang \
+    libboost-all-dev \
+    entr \
+    --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy CMakeLists.txt and anything required for config
+COPY CMakeLists.txt ./
+COPY src .
+
+# Configure build dir
+RUN mkdir -p build
+
+# Entrypoint script to watch and rebuild
+COPY ./scripts/watch.sh /watch.sh
+RUN chmod +x /watch.sh
+
+CMD ["/watch.sh"]
+

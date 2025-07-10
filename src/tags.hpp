@@ -16,7 +16,6 @@ struct swap : command { constexpr static std::string_view cmd = "hx-swap";};
 
 struct ToString {};
 
-
 namespace pond {
 
 // String literal template for compile-time string handling
@@ -192,8 +191,6 @@ struct tag_base : public ToString {
     return s;
   }
 };
-
-
 
 
 // Helper macro to define specific tags

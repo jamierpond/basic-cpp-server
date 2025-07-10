@@ -15,31 +15,19 @@ WORKDIR /app
 # Copy source files
 COPY . .
 
+RUN ls
+
 # Build the project
-RUN mkdir -p build && cd build && \
+RUN mkdir -p build && \
     cmake -G Ninja \
+    -B build \
+    -S . \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_COMPILER=clang \
-    -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
-    -DCMAKE_CXX_STANDARD=23 .. && \
-    ninja
+    -DCMAKE_C_COMPILER=clang \
+    -DCMAKE_CXX_COMPILER=clang++ \
 
-# Final stage - using smaller image
-FROM ubuntu:22.04
-
-# Install only necessary runtime dependencies
-RUN apt-get update && apt-get install -y \
-    libssl3 libc++1 --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/*
-
-# Set working directory
-WORKDIR /app
-
-# Copy only the built binary
-COPY --from=builder /app/build/PondAudio .
-
-# Expose port
-EXPOSE 3000
+RUN cd build && \
+    cmake --build . --target install
 
 # Run server
-CMD ["./PondAudio"]
+CMD ["./build/PondAudio"]
