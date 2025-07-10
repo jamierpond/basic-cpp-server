@@ -1,24 +1,27 @@
 FROM ubuntu:22.04
 
-# Install dependencies including modern Clang and Ninja
+# Install basic deps and add LLVM, Boost, and Kitware repos
 RUN apt-get update && apt-get install -y \
-    git \
-    lsb-release \
-    wget \
-    software-properties-common \
-    gnupg \
+    software-properties-common lsb-release wget gnupg curl \
+    && curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/llvm.gpg] https://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main" \
+      > /etc/apt/sources.list.d/llvm.list \
+    && add-apt-repository -y ppa:mhier/libboost-latest \
+    && wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | \
+        gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main" \
+      > /etc/apt/sources.list.d/kitware.list \
+    && apt-get update
+
+# Install CMake, Ninja, Boost, OpenSSL, and other build tools
+RUN apt-get install -y \
+    cmake \
     ninja-build \
+    git \
     entr \
+    libboost-all-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
-
-
-# Install up to date CMake
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add - && \
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main' && \
-    apt-get update && \
-    apt-get install -y cmake && \
-    rm -rf /var/lib/apt/lists/*
-
 
 # Add LLVM/Clang repository and install Clang 16
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
@@ -37,9 +40,6 @@ WORKDIR /app
 # Copy watch script (source code will be volume-mounted)
 COPY scripts/watch.sh /app/scripts/watch.sh
 RUN chmod +x /app/scripts/watch.sh
-COPY CMakePresets.json /app/CMakePresets.json
-
-RUN cmake --preset docker
 
 # Run the watch script
 CMD ["/app/scripts/watch.sh"]
