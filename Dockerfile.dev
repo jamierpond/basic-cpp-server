@@ -12,8 +12,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy CMakeLists.txt and anything required for config
-COPY CMakeLists.txt ./
-COPY src src
+# COPY CMakeLists.txt ./
+# COPY src src
 
 # Configure build dir
 RUN mkdir -p build

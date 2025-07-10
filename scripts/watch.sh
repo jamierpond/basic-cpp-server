@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd "$(dirname "$0")/.."
+cd /app
 
 # Watch for changes and rebuild using Ninja
 find ./src -name '*.cpp' -o -name '*.h' | \

@@ -15,6 +15,10 @@ WORKDIR /app
 # Copy source files
 COPY . .
 
+COPY test test
+COPY third-party third-party
+
+
 RUN ls
 
 # Build the project
