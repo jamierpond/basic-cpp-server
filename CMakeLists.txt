@@ -3,7 +3,12 @@ project(PondAudio VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -fexperimental-library")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+
+if(APPLE)
+  add_compile_options(-fexperimental-library)
+endif()
+
 
 # Define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT to handle C++20/23 compatibility
 add_compile_definitions(BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT)
