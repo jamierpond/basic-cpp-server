@@ -1,20 +1,35 @@
 FROM ubuntu:22.04
 
+# Install dependencies including modern Clang and Ninja
 RUN apt-get update && apt-get install -y \
-    software-properties-common lsb-release wget gnupg \
-    ninja-build clang git libboost-all-dev libssl-dev entr \
-    libc++-dev libc++abi-dev \
-    && wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | \
-        gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main" \
-        > /etc/apt/sources.list.d/kitware.list && \
-    apt-get update && apt-get install -y cmake
+    cmake \
+    git \
+    lsb-release \
+    wget \
+    software-properties-common \
+    gnupg \
+    ninja-build \
+    entr \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN cmake --version
+# Add LLVM/Clang repository and install Clang 16
+RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
+    add-apt-repository "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-16 main" && \
+    apt-get update && \
+    apt-get install -y clang-16 lldb-16 lld-16 libc++-16-dev libc++abi-16-dev && \
+    rm -rf /var/lib/apt/lists/*
 
-# Setup
+# Set Clang as the default compiler
+ENV CC=clang-16
+ENV CXX=clang++-16
+
+# Set working directory
 WORKDIR /app
-COPY . .
-RUN chmod +x ./scripts/watch.sh
-RUN cmake --preset debug
+
+# Copy watch script (source code will be volume-mounted)
+COPY scripts/watch.sh /app/scripts/watch.sh
+RUN chmod +x /app/scripts/watch.sh
+
+# Run the watch script
+CMD ["/app/scripts/watch.sh"]
 
