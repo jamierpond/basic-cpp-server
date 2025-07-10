@@ -6,22 +6,20 @@ RUN apt-get update && apt-get install -y \
     libssl-dev lsb-release clang \
     libboost-all-dev \
     entr \
-    --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/*
+    --no-install-recommends
 
 # Set working directory
 WORKDIR /app
 
 # Copy CMakeLists.txt and anything required for config
 COPY CMakeLists.txt ./
-COPY src .
+COPY src src
 
 # Configure build dir
 RUN mkdir -p build
 
 # Entrypoint script to watch and rebuild
-COPY ./scripts/watch.sh /watch.sh
-RUN chmod +x /watch.sh
+COPY ./scripts/watch.sh ./scripts/watch.sh
+RUN chmod +x ./scripts/watch.sh
 
-CMD ["/watch.sh"]
 

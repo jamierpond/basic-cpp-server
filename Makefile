@@ -13,10 +13,8 @@ run:
 		--network host \
 		$(APP_NAME)
 
-
 dev:
 	docker compose -f docker-compose.dev.yaml up --build
-
 
 stop:
 	docker compose -f docker-compose.dev.yaml down

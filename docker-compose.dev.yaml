@@ -6,6 +6,6 @@ services:
     volumes:
       - .:/app
     working_dir: /app
-    command: ["/watch.sh"]
+    command: ["/app/scripts/watch.sh"]
     tty: true
 
