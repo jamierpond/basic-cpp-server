@@ -2,7 +2,6 @@ FROM ubuntu:22.04
 
 # Install dependencies including modern Clang and Ninja
 RUN apt-get update && apt-get install -y \
-    cmake \
     git \
     lsb-release \
     wget \
@@ -11,6 +10,15 @@ RUN apt-get update && apt-get install -y \
     ninja-build \
     entr \
     && rm -rf /var/lib/apt/lists/*
+
+
+# Install up to date CMake
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add - && \
+    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main' && \
+    apt-get update && \
+    apt-get install -y cmake && \
+    rm -rf /var/lib/apt/lists/*
+
 
 # Add LLVM/Clang repository and install Clang 16
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
@@ -29,6 +37,9 @@ WORKDIR /app
 # Copy watch script (source code will be volume-mounted)
 COPY scripts/watch.sh /app/scripts/watch.sh
 RUN chmod +x /app/scripts/watch.sh
+COPY CMakePresets.json /app/CMakePresets.json
+
+RUN cmake --preset docker
 
 # Run the watch script
 CMD ["/app/scripts/watch.sh"]

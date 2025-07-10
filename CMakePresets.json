@@ -25,6 +25,15 @@
       }
     },
     {
+      "name": "docker",
+      "inherits": "debug",
+      "binaryDir": "${sourceDir}/build-docker",
+      "description": "for docker",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
       "name": "release",
       "inherits": "default",
       "description": "Optimized release build",
@@ -37,6 +46,10 @@
     {
       "name": "debug",
       "configurePreset": "debug"
+    },
+    {
+      "name": "docker",
+      "configurePreset": "docker"
     },
     {
       "name": "release",
