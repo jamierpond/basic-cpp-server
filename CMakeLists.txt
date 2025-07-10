@@ -13,6 +13,10 @@ endif()
 # Define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT to handle C++20/23 compatibility
 add_compile_definitions(BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT)
 add_compile_definitions(BOOST_ASIO_DISABLE_STD_RESULT_OF)
+add_compile_definitions(BOOST_ALL_NO_LIB)
+add_compile_definitions(BOOST_ATOMIC_DYN_LINK)
+add_compile_definitions(BOOST_SYSTEM_DYN_LINK)
+add_compile_definitions(BOOST_THREAD_DYN_LINK)
 
 if(USE_ASAN)
     message(STATUS "Enabling Address Sanitizer")
