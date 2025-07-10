@@ -1,25 +1,20 @@
 FROM ubuntu:22.04
 
-# Install deps
 RUN apt-get update && apt-get install -y \
-    cmake git wget software-properties-common gnupg ninja-build \
-    libssl-dev lsb-release clang \
-    libboost-all-dev \
-    entr \
-    --no-install-recommends
+    software-properties-common lsb-release wget gnupg \
+    ninja-build clang git libboost-all-dev libssl-dev entr \
+    && wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc | \
+        gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main" \
+        > /etc/apt/sources.list.d/kitware.list && \
+    apt-get update && apt-get install -y cmake
 
-# Set working directory
+# Confirm version
+RUN cmake --version
+
+# Setup
 WORKDIR /app
-
-# Copy CMakeLists.txt and anything required for config
-# COPY CMakeLists.txt ./
-# COPY src src
-
-# Configure build dir
-RUN mkdir -p build
-
-# Entrypoint script to watch and rebuild
-COPY ./scripts/watch.sh ./scripts/watch.sh
+COPY . .
 RUN chmod +x ./scripts/watch.sh
-
+RUN cmake --preset debug
 
